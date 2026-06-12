@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -721,34 +722,35 @@ function splitCSVLine(line){
 function parseCSV(text){
   const lines = text.trim().split('\n').filter(l=>l.trim());
 
-  // Detectar fila real de encabezados: la primera fila que tenga
-  // "Nombre" o "Fecha" o "Nombre completo" como primera columna
-  const headerKeywords = ['nombre','fecha','nombre completo'];
-  let headerIdx = 0;
-  for(let i=0; i<Math.min(lines.length,6); i++){
-    const first = splitCSVLine(lines[i])[0].toLowerCase().replace(/"/g,'').trim();
-    if(headerKeywords.some(k=>first.includes(k))){
+  // Buscar la fila de headers: la que contenga "Nombre completo" o "Fecha" en cualquier celda
+  const headerKeywords = ['nombre completo','fecha','nombre'];
+  let headerIdx = -1;
+  for(let i=0; i<Math.min(lines.length,8); i++){
+    const cells = splitCSVLine(lines[i]).map(c=>c.toLowerCase().trim());
+    if(cells.some(c => headerKeywords.some(k => c === k))){
       headerIdx = i;
       break;
     }
   }
+  if(headerIdx === -1) headerIdx = 0; // fallback
 
-  const headers = splitCSVLine(lines[headerIdx]);
+  const headers = splitCSVLine(lines[headerIdx]).map(h=>h.trim());
+
   return lines.slice(headerIdx+1).filter(l=>{
-    // Filtrar filas vacías o de sección decorativa (primera celda con emoji o vacía)
-    const first = splitCSVLine(l)[0];
-    return first && !first.startsWith('📋') && !first.startsWith('🏃') &&
-           !first.startsWith('📏') && !first.startsWith('🩺') &&
-           !first.startsWith('📊') && !first.startsWith('💰') &&
-           !first.startsWith('⚠') && !first.startsWith('📦') &&
-           !first.startsWith('📅') && first.length > 0;
+    const cells = splitCSVLine(l);
+    const first = cells[0] || '';
+    // Descartar filas decorativas: vacías, con emojis de sección, o que sean repetición de headers
+    if(!first) return false;
+    if(['📋','🏃','📏','🩺','📊','💰','⚠','📦','📅','👟','💳','🏥','👥'].some(e=>first.startsWith(e))) return false;
+    // Descartar si la primera celda es igual a la primera columna del header (fila de sección)
+    if(first.toLowerCase() === headers[0].toLowerCase()) return false;
+    return true;
   }).map(line=>{
     const vals = splitCSVLine(line);
     const obj={};
     headers.forEach((h,i)=>{ obj[h]=(vals[i]||'').trim(); });
     return obj;
   }).filter(obj=>{
-    // Filtrar filas donde Nombre completo (o primera columna) está vacío
     const firstKey = Object.keys(obj)[0];
     return obj[firstKey] && obj[firstKey].length > 0;
   });
