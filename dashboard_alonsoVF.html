@@ -222,6 +222,62 @@
   .rc{cursor:pointer;transition:background .12s;}
   .rc:hover td{background:var(--teal-lt)!important;}
   .hint-click{font-size:.7rem;color:var(--text3);font-style:italic;margin-top:8px;text-align:right;}
+
+  /* ── AGENDA SEMANAL ── */
+  .agenda-wrap{display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start;}
+  .semana-grid{background:var(--sw);border-radius:var(--radius);border:1px solid var(--border);
+    box-shadow:var(--shadow);overflow:hidden;}
+  .semana-header{display:grid;grid-template-columns:60px repeat(7,1fr);background:var(--surface);}
+  .sh-empty{padding:10px;}
+  .sh-dia{padding:10px 6px;text-align:center;border-left:1px solid var(--border);cursor:pointer;
+    transition:background .15s;}
+  .sh-dia:hover{background:var(--teal-lt);}
+  .sh-dia.hoy{background:var(--teal-lt);}
+  .sh-dia.selected{background:var(--teal);color:#fff;}
+  .sh-dia-num{font-size:1.1rem;font-weight:900;line-height:1;}
+  .sh-dia-nom{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+    color:var(--text2);margin-top:2px;}
+  .sh-dia.selected .sh-dia-nom{color:rgba(255,255,255,.8);}
+  .sh-dia.hoy .sh-dia-nom{color:var(--teal);}
+
+  .semana-body{display:grid;grid-template-columns:60px repeat(7,1fr);}
+  .hora-col{padding:8px 6px;text-align:right;font-size:.68rem;font-weight:700;color:var(--text3);
+    border-top:1px solid var(--bg);display:flex;align-items:flex-start;justify-content:flex-end;}
+  .dia-col{border-left:1px solid var(--bg);border-top:1px solid var(--bg);
+    min-height:44px;padding:3px;position:relative;cursor:pointer;transition:background .12s;}
+  .dia-col:hover{background:var(--surface);}
+  .dia-col.hoy-col{background:rgba(13,148,136,.03);}
+  .bloque{border-radius:6px;padding:4px 7px;margin-bottom:2px;font-size:.67rem;
+    font-weight:700;line-height:1.3;cursor:pointer;}
+  .bloque-per{background:var(--teal-lt);color:var(--teal);border-left:3px solid var(--teal);}
+  .bloque-grp{background:var(--blue-lt);color:#1d4ed8;border-left:3px solid var(--blue);}
+  .bloque-cli{background:var(--coral-lt);color:#991b1b;border-left:3px solid var(--coral);}
+
+  /* Panel detalle del día */
+  .dia-detalle{background:var(--sw);border-radius:var(--radius);border:1px solid var(--border);
+    box-shadow:var(--shadow);position:sticky;top:74px;}
+  .dd-header{padding:16px 18px 12px;border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;}
+  .dd-titulo{font-size:.95rem;font-weight:800;color:var(--text);}
+  .dd-sub{font-size:.75rem;color:var(--text2);margin-top:2px;}
+  .dd-body{padding:14px 18px;max-height:calc(100vh - 200px);overflow-y:auto;}
+  .dd-sesion{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--bg);}
+  .dd-sesion:last-child{border-bottom:none;}
+  .dd-hora{font-size:.75rem;font-weight:800;color:var(--text2);width:44px;flex-shrink:0;
+    padding-top:2px;}
+  .dd-info{flex:1;}
+  .dd-cliente{font-size:.84rem;font-weight:700;color:var(--text);}
+  .dd-tipo{font-size:.7rem;color:var(--text2);margin-top:1px;}
+  .dd-obs{font-size:.75rem;color:var(--text2);margin-top:4px;font-style:italic;}
+  .dd-empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:.83rem;}
+  .dd-empty .icon{font-size:2rem;margin-bottom:8px;}
+
+  .nav-semana{display:flex;align-items:center;gap:8px;}
+  .nav-semana button{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);
+    background:var(--sw);cursor:pointer;font-size:.9rem;display:flex;align-items:center;
+    justify-content:center;transition:all .15s;}
+  .nav-semana button:hover{background:var(--teal);color:#fff;border-color:var(--teal);}
+  .nav-semana-lbl{font-size:.78rem;font-weight:700;color:var(--text2);}
 </style>
 </head>
 <body>
@@ -278,6 +334,7 @@
     <button class="nav-tab" onclick="show('grupos',this)">👥 Grupos</button>
     <button class="nav-tab" onclick="show('clinica',this)">🩺 Clínica</button>
     <button class="nav-tab" onclick="show('negocio',this)">📈 Negocio</button>
+    <button class="nav-tab" onclick="show('agenda',this)">📅 Agenda</button>
   </div>
   <div class="top-right">
     <span class="sync-status" id="syncStatus">Demo — sin Sheets</span>
@@ -617,6 +674,40 @@
   </div>
 </div>
 
+
+<!-- ══════════ AGENDA ══════════ -->
+<div class="page" id="page-agenda">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div>
+      <div style="font-size:1rem;font-weight:800;color:var(--text)">Agenda semanal</div>
+      <div style="font-size:.78rem;color:var(--text2)" id="agenda-rango">—</div>
+    </div>
+    <div class="nav-semana">
+      <button onclick="semanaAnterior()">‹</button>
+      <span class="nav-semana-lbl" id="semana-lbl">Esta semana</span>
+      <button onclick="semanaSiguiente()">›</button>
+      <button onclick="irHoy()" style="width:auto;padding:0 10px;font-size:.72rem;font-weight:700">Hoy</button>
+    </div>
+  </div>
+  <div class="agenda-wrap">
+    <div class="semana-grid">
+      <div class="semana-header" id="semana-header"></div>
+      <div class="semana-body" id="semana-body"></div>
+    </div>
+    <div class="dia-detalle">
+      <div class="dd-header">
+        <div>
+          <div class="dd-titulo" id="dd-titulo">Selecciona un día</div>
+          <div class="dd-sub" id="dd-sub">Haz clic en cualquier día del calendario</div>
+        </div>
+      </div>
+      <div class="dd-body" id="dd-body">
+        <div class="dd-empty"><div class="icon">📅</div>Selecciona un día para ver el detalle</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════ TABLA PT ═══════════════════════
 const CLIENTES_PT = [
@@ -778,6 +869,10 @@ async function syncSheets(){
 
     // Actualizar sesiones en SESIONES_DEMO para fichas
     actualizarSesionesFicha(sesionesRaw);
+
+    // Cargar sesiones en la agenda
+    cargarSesionesDesdeSheet(sesionesRaw);
+    renderAgendaSemanal();
 
     status.textContent = '✓ Sheets conectado · ' + new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
     status.style.color = 'var(--teal)';
@@ -1072,10 +1167,190 @@ function addNota(nombre){
 // Cerrar con Escape
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeFicha(); });
 
+
+// ═══════════════════════════════════════════
+// AGENDA SEMANAL
+// ═══════════════════════════════════════════
+
+let semanaOffset = 0;  // 0 = semana actual
+let diaSeleccionado = null;
+let sesionesAgenda = []; // se llena desde Sheets o demo
+
+// Sesiones demo para la agenda
+const SESIONES_AGENDA_DEMO = [
+  // Lunes
+  {fecha:'2026-06-09',hora:'07:00',cliente:'Lorraine Pugh',tipo:'per',servicio:'Rugby – fuerza'},
+  {fecha:'2026-06-09',hora:'08:00',cliente:'Willy Yancovic',tipo:'per',servicio:'Rugby – potencia'},
+  {fecha:'2026-06-09',hora:'09:00',cliente:'Carla Boero',tipo:'per',servicio:'Hockey – agilidad'},
+  // Martes
+  {fecha:'2026-06-10',hora:'07:00',cliente:'Lorraine Pugh',tipo:'per',servicio:'Rugby – velocidad'},
+  {fecha:'2026-06-10',hora:'08:00',cliente:'Willy Yancovic',tipo:'per',servicio:'Rugby – sprint'},
+  {fecha:'2026-06-10',hora:'09:00',cliente:'Carla Boero',tipo:'per',servicio:'Hockey – pases'},
+  {fecha:'2026-06-10',hora:'10:00',cliente:'Soledad Espinoza',tipo:'per',servicio:'Sedentario – core'},
+  {fecha:'2026-06-10',hora:'13:00',cliente:'Sanatorio Alemán',tipo:'cli',servicio:'Turno clínico'},
+  {fecha:'2026-06-10',hora:'19:00',cliente:'Anita Jara',tipo:'per',servicio:'Cardio + fuerza'},
+  {fecha:'2026-06-10',hora:'20:00',cliente:'Nicolás Spoerer',tipo:'per',servicio:'Rugby – explosividad'},
+  {fecha:'2026-06-10',hora:'20:30',cliente:'Grupo Funcional A',tipo:'grp',servicio:'Funcional – 13 personas'},
+  // Miércoles
+  {fecha:'2026-06-11',hora:'07:00',cliente:'Mariana Spoerer',tipo:'per',servicio:'Funcional + core'},
+  {fecha:'2026-06-11',hora:'08:00',cliente:'Magdalena Spoerer',tipo:'per',servicio:'Movilidad'},
+  {fecha:'2026-06-11',hora:'13:00',cliente:'Sanatorio Alemán',tipo:'cli',servicio:'Turno clínico'},
+  // Jueves
+  {fecha:'2026-06-12',hora:'07:00',cliente:'Lorraine Pugh',tipo:'per',servicio:'Hockey – resistencia'},
+  {fecha:'2026-06-12',hora:'08:00',cliente:'Willy Yancovic',tipo:'per',servicio:'Rugby – fuerza'},
+  {fecha:'2026-06-12',hora:'13:00',cliente:'Sanatorio Alemán',tipo:'cli',servicio:'Turno clínico'},
+  {fecha:'2026-06-12',hora:'19:00',cliente:'Solange Marisio',tipo:'per',servicio:'Hockey – base'},
+  // Viernes
+  {fecha:'2026-06-13',hora:'07:00',cliente:'Nicolás Spoerer',tipo:'per',servicio:'Rugby – técnica'},
+  {fecha:'2026-06-13',hora:'08:00',cliente:'Anita Jara',tipo:'per',servicio:'Sedentario – fuerza'},
+  {fecha:'2026-06-13',hora:'13:00',cliente:'Sanatorio Alemán',tipo:'cli',servicio:'Turno clínico'},
+  // Sábado
+  {fecha:'2026-06-14',hora:'09:30',cliente:'Grupo Funcional B',tipo:'grp',servicio:'Funcional – 10 personas'},
+];
+
+function getLunesDeSemana(offset){
+  const hoy = new Date();
+  const dia = hoy.getDay(); // 0=dom, 1=lun...
+  const diff = (dia === 0 ? -6 : 1 - dia); // días hasta el lunes
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() + diff + (offset * 7));
+  lunes.setHours(0,0,0,0);
+  return lunes;
+}
+
+function dateStr(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function formatFechaLarga(d){
+  return d.toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'});
+}
+
+function renderAgendaSemanal(){
+  const lunes = getLunesDeSemana(semanaOffset);
+  const dias = [];
+  for(let i=0;i<7;i++){
+    const d = new Date(lunes);
+    d.setDate(lunes.getDate()+i);
+    dias.push(d);
+  }
+
+  // Actualizar rango y label
+  const fin = dias[6];
+  document.getElementById('agenda-rango').textContent =
+    lunes.toLocaleDateString('es-CL',{day:'numeric',month:'long'}) + ' — ' +
+    fin.toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('semana-lbl').textContent =
+    semanaOffset === 0 ? 'Esta semana' : (semanaOffset < 0 ? 'Semana anterior' : 'Próxima semana');
+
+  const hoyStr = dateStr(new Date());
+  const nomDias = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+  // Header
+  let headerHTML = '<div class="sh-empty"></div>';
+  dias.forEach((d,i)=>{
+    const ds = dateStr(d);
+    const esHoy = ds === hoyStr;
+    const esSel = diaSeleccionado === ds;
+    headerHTML += `<div class="sh-dia ${esHoy?'hoy':''} ${esSel?'selected':''}" onclick="seleccionarDia('${ds}',this)">
+      <div class="sh-dia-num">${d.getDate()}</div>
+      <div class="sh-dia-nom">${nomDias[i]}</div>
+    </div>`;
+  });
+  document.getElementById('semana-header').innerHTML = headerHTML;
+
+  // Body — horas de 7 a 21
+  const horas = ['07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00',
+                 '15:00','16:00','17:00','18:00','19:00','20:00','20:30','21:00'];
+  const fuente = sesionesAgenda.length ? sesionesAgenda : SESIONES_AGENDA_DEMO;
+
+  let bodyHTML = '';
+  horas.forEach(h=>{
+    bodyHTML += `<div class="hora-col">${h}</div>`;
+    dias.forEach(d=>{
+      const ds = dateStr(d);
+      const esHoy = ds === hoyStr;
+      const sesiones = fuente.filter(s=>s.fecha===ds && s.hora===h);
+      let bloques = sesiones.map(s=>{
+        const cls = s.tipo==='grp'?'bloque-grp':s.tipo==='cli'?'bloque-cli':'bloque-per';
+        return `<div class="bloque ${cls}" onclick="seleccionarDia('${ds}',null)">${s.cliente}</div>`;
+      }).join('');
+      bodyHTML += `<div class="dia-col ${esHoy?'hoy-col':''}" onclick="seleccionarDia('${ds}',null)">${bloques}</div>`;
+    });
+  });
+  document.getElementById('semana-body').innerHTML = bodyHTML;
+
+  // Si hay día seleccionado, re-renderizar detalle
+  if(diaSeleccionado) renderDetalleDia(diaSeleccionado);
+}
+
+function seleccionarDia(fechaStr, headerEl){
+  diaSeleccionado = fechaStr;
+  renderAgendaSemanal(); // re-render para actualizar selected
+  renderDetalleDia(fechaStr);
+}
+
+function renderDetalleDia(fechaStr){
+  const d = new Date(fechaStr + 'T12:00:00');
+  document.getElementById('dd-titulo').textContent =
+    d.toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'});
+
+  const fuente = sesionesAgenda.length ? sesionesAgenda : SESIONES_AGENDA_DEMO;
+  const sesiones = fuente.filter(s=>s.fecha===fechaStr).sort((a,b)=>a.hora.localeCompare(b.hora));
+
+  document.getElementById('dd-sub').textContent =
+    sesiones.length ? `${sesiones.length} sesión${sesiones.length>1?'es':''} programada${sesiones.length>1?'s':''}` : 'Sin sesiones';
+
+  if(!sesiones.length){
+    document.getElementById('dd-body').innerHTML =
+      '<div class="dd-empty"><div class="icon">🌿</div>Día libre — sin sesiones programadas</div>';
+    return;
+  }
+
+  document.getElementById('dd-body').innerHTML = sesiones.map(s=>{
+    const col = s.tipo==='grp'?'var(--blue)':s.tipo==='cli'?'var(--coral)':'var(--teal)';
+    const tipoBadge = s.tipo==='grp'?'Grupal':s.tipo==='cli'?'Clínica':'Personal';
+    return `<div class="dd-sesion">
+      <div class="dd-hora">${s.hora}</div>
+      <div class="dd-info">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="dd-cliente">${s.cliente}</span>
+          <span style="font-size:.67rem;font-weight:700;padding:2px 7px;border-radius:10px;
+            background:${col}20;color:${col}">${tipoBadge}</span>
+        </div>
+        <div class="dd-tipo">${s.servicio}</div>
+        ${s.obs?`<div class="dd-obs">${s.obs}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function semanaAnterior(){ semanaOffset--; renderAgendaSemanal(); }
+function semanaSiguiente(){ semanaOffset++; renderAgendaSemanal(); }
+function irHoy(){ semanaOffset=0; diaSeleccionado=dateStr(new Date()); renderAgendaSemanal(); }
+
+function cargarSesionesDesdeSheet(sesionesRaw){
+  if(!sesionesRaw || !sesionesRaw.length) return;
+  sesionesAgenda = sesionesRaw.map(s=>{
+    const fecha = getCol(s,'Fecha') || s['Fecha'] || '';
+    const hora  = getCol(s,'Hora')  || s['Hora']  || '';
+    const cli   = getCol(s,'Cliente') || s['Cliente'] || '';
+    const serv  = getCol(s,'Servicio') || s['Servicio / Foco'] || '';
+    const tipo  = (getCol(s,'Tipo') || s['Tipo sesión'] || '').toLowerCase().includes('grup') ? 'grp' :
+                  cli.toLowerCase().includes('sanatorio') ? 'cli' : 'per';
+    const obs   = getCol(s,'Observaciones') || s['Observaciones / Progreso'] || '';
+    return {fecha, hora, cliente:cli, tipo, servicio:serv, obs};
+  }).filter(s=>s.fecha && s.cliente);
+}
+
 // ═══════════════════════ INIT ═══════════════════════
 document.getElementById('topDate').textContent =
   new Date().toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 renderTablaPT();
+
+// Inicializar agenda con día de hoy seleccionado
+diaSeleccionado = dateStr(new Date());
+renderAgendaSemanal();
 
 // Si ya había un ID guardado, sincronizar automáticamente al abrir
 const _savedId = localStorage.getItem(LS_KEY);
