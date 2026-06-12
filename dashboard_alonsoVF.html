@@ -278,9 +278,95 @@
     justify-content:center;transition:all .15s;}
   .nav-semana button:hover{background:var(--teal);color:#fff;border-color:var(--teal);}
   .nav-semana-lbl{font-size:.78rem;font-weight:700;color:var(--text2);}
+
+  /* ── MODAL NUEVA SESIÓN ── */
+  .modal-sesion-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);
+    z-index:400;align-items:center;justify-content:center;}
+  .modal-sesion-bg.open{display:flex;}
+  .modal-sesion{background:var(--sw);border-radius:18px;padding:28px;
+    max-width:460px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+  .ms-title{font-size:1rem;font-weight:800;margin-bottom:4px;}
+  .ms-sub{font-size:.78rem;color:var(--text2);margin-bottom:20px;}
+  .ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .ms-field{display:flex;flex-direction:column;gap:5px;}
+  .ms-field.full{grid-column:span 2;}
+  .ms-label{font-size:.7rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;}
+  .ms-input{padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;
+    font-size:.84rem;font-family:var(--font);background:var(--surface);
+    color:var(--text);outline:none;}
+  .ms-input:focus{border-color:var(--teal);}
+  select.ms-input{cursor:pointer;}
+  .ms-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
+  .ms-saving{font-size:.78rem;color:var(--teal);display:none;align-items:center;gap:6px;}
+  .ms-saving.show{display:flex;}
 </style>
 </head>
 <body>
+
+
+<!-- MODAL NUEVA SESIÓN -->
+<div class="modal-sesion-bg" id="modalSesionBg">
+  <div class="modal-sesion">
+    <div class="ms-title" id="ms-titulo">➕ Nueva sesión</div>
+    <div class="ms-sub" id="ms-fecha-lbl">—</div>
+    <div class="ms-grid">
+      <div class="ms-field">
+        <label class="ms-label">Hora</label>
+        <input class="ms-input" id="ms-hora" type="time" value="07:00">
+      </div>
+      <div class="ms-field">
+        <label class="ms-label">Tipo</label>
+        <select class="ms-input" id="ms-tipo">
+          <option value="Personal">Personal Training</option>
+          <option value="Grupal">Clase Grupal</option>
+          <option value="Clínica">Clínica</option>
+        </select>
+      </div>
+      <div class="ms-field full">
+        <label class="ms-label">Cliente</label>
+        <select class="ms-input" id="ms-cliente">
+          <option value="">Seleccionar cliente…</option>
+          <option>Lorraine Pugh</option>
+          <option>Carla Boero</option>
+          <option>Soledad Espinoza</option>
+          <option>Willy Yancovic</option>
+          <option>Solange Marisio</option>
+          <option>Anita Jara</option>
+          <option>Nicolás Spoerer</option>
+          <option>Mariana Spoerer</option>
+          <option>Magdalena Spoerer</option>
+          <option>Grupo Funcional A</option>
+          <option>Grupo Funcional B</option>
+          <option>Sanatorio Alemán</option>
+        </select>
+      </div>
+      <div class="ms-field full">
+        <label class="ms-label">Servicio / Foco</label>
+        <input class="ms-input" id="ms-servicio" type="text" placeholder="Ej: Rugby – fuerza tren inferior">
+      </div>
+      <div class="ms-field">
+        <label class="ms-label">Monto ($)</label>
+        <input class="ms-input" id="ms-monto" type="number" placeholder="10000">
+      </div>
+      <div class="ms-field">
+        <label class="ms-label">¿Asistió?</label>
+        <select class="ms-input" id="ms-asistio">
+          <option value="Sí">Sí</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+      <div class="ms-field full">
+        <label class="ms-label">Observaciones</label>
+        <input class="ms-input" id="ms-obs" type="text" placeholder="Notas de la sesión…">
+      </div>
+    </div>
+    <div class="ms-btns">
+      <span class="ms-saving" id="ms-saving">⟳ Guardando…</span>
+      <button class="btn btn-ghost" onclick="cerrarModalSesion()">Cancelar</button>
+      <button class="btn btn-teal" onclick="guardarSesion()">Guardar sesión</button>
+    </div>
+  </div>
+</div>
 
 <!-- FICHA OVERLAY -->
 <div class="ficha-overlay" id="fichaOverlay" onclick="closeFicha()"></div>
@@ -696,10 +782,14 @@
     </div>
     <div class="dia-detalle">
       <div class="dd-header">
-        <div>
+        <div style="flex:1">
           <div class="dd-titulo" id="dd-titulo">Selecciona un día</div>
           <div class="dd-sub" id="dd-sub">Haz clic en cualquier día del calendario</div>
         </div>
+        <button onclick="abrirModalSesion()" style="width:32px;height:32px;border-radius:9px;
+          background:var(--teal);color:#fff;border:none;font-size:1.2rem;cursor:pointer;
+          display:flex;align-items:center;justify-content:center;flex-shrink:0"
+          title="Agregar sesión">+</button>
       </div>
       <div class="dd-body" id="dd-body">
         <div class="dd-empty"><div class="icon">📅</div>Selecciona un día para ver el detalle</div>
@@ -856,11 +946,21 @@ async function syncSheets(){
 
   try {
     // Leer todas las hojas relevantes en paralelo
-    const [clientesRaw, paquetesRaw, sesionesRaw] = await Promise.all([
-      fetchSheet(sheetId, 'Clientes_PT'),
-      fetchSheet(sheetId, 'Paquetes_PT'),
-      fetchSheet(sheetId, 'Sesiones_PT'),
-    ]);
+    // Intentar via Apps Script primero, fallback a CSV público
+    let clientesRaw, paquetesRaw, sesionesRaw;
+    try {
+      [clientesRaw, paquetesRaw, sesionesRaw] = await Promise.all([
+        appsGet('Clientes_PT'),
+        appsGet('Paquetes_PT'),
+        appsGet('Sesiones_PT'),
+      ]);
+    } catch(e2) {
+      [clientesRaw, paquetesRaw, sesionesRaw] = await Promise.all([
+        fetchSheet(sheetId, 'Clientes_PT'),
+        fetchSheet(sheetId, 'Paquetes_PT'),
+        fetchSheet(sheetId, 'Sesiones_PT'),
+      ]);
+    }
 
     // Actualizar tabla PT si hay datos reales
     if(clientesRaw.length){
@@ -1167,6 +1267,105 @@ function addNota(nombre){
 // Cerrar con Escape
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeFicha(); });
 
+
+
+// ═══════════════════════════════════════════
+// APPS SCRIPT — Lectura y escritura en Sheets
+// ═══════════════════════════════════════════
+const APPS_URL = 'https://script.google.com/macros/s/AKfycbxulliq5YxxQRJ7eWPKOwhBbTc_YGduhQ4e3vmKtNsbp9XfG4Bv4wfGUZjxHv4koJcO/exec';
+
+async function appsGet(hoja){
+  const url = APPS_URL + '?sheet=' + encodeURIComponent(hoja);
+  const res = await fetch(url);
+  const data = await res.json();
+  return data.datos || [];
+}
+
+async function appsPost(payload){
+  const res = await fetch(APPS_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  return await res.json();
+}
+
+// ── Modal nueva sesión ──
+let _fechaSesion = '';
+
+function abrirModalSesion(){
+  if(!diaSeleccionado){ alert('Primero selecciona un día en el calendario'); return; }
+  _fechaSesion = diaSeleccionado;
+  const d = new Date(_fechaSesion + 'T12:00:00');
+  document.getElementById('ms-titulo').textContent = '➕ Nueva sesión';
+  document.getElementById('ms-fecha-lbl').textContent =
+    d.toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('ms-hora').value = '07:00';
+  document.getElementById('ms-cliente').value = '';
+  document.getElementById('ms-servicio').value = '';
+  document.getElementById('ms-monto').value = '10000';
+  document.getElementById('ms-asistio').value = 'Sí';
+  document.getElementById('ms-obs').value = '';
+  document.getElementById('ms-saving').classList.remove('show');
+  document.getElementById('modalSesionBg').classList.add('open');
+}
+
+function cerrarModalSesion(){
+  document.getElementById('modalSesionBg').classList.remove('open');
+}
+
+async function guardarSesion(){
+  const cliente = document.getElementById('ms-cliente').value;
+  if(!cliente){ alert('Selecciona un cliente'); return; }
+
+  const payload = {
+    accion:   'agregar_sesion',
+    fecha:    _fechaSesion,
+    hora:     document.getElementById('ms-hora').value,
+    cliente,
+    tipo:     document.getElementById('ms-tipo').value,
+    servicio: document.getElementById('ms-servicio').value,
+    monto:    document.getElementById('ms-monto').value,
+    asistio:  document.getElementById('ms-asistio').value,
+    obs:      document.getElementById('ms-obs').value,
+    duracion: 60,
+    pagado:   'Sí',
+  };
+
+  document.getElementById('ms-saving').classList.add('show');
+
+  try {
+    const result = await appsPost(payload);
+    if(result.ok){
+      cerrarModalSesion();
+      // Agregar localmente para que aparezca de inmediato sin esperar sync
+      const tipo = payload.tipo === 'Grupal' ? 'grp' : payload.tipo === 'Clínica' ? 'cli' : 'per';
+      sesionesAgenda.push({
+        fecha:    payload.fecha,
+        hora:     payload.hora,
+        cliente:  payload.cliente,
+        tipo,
+        servicio: payload.servicio,
+        obs:      payload.obs,
+      });
+      renderAgendaSemanal();
+      renderDetalleDia(_fechaSesion);
+    } else {
+      alert('Error: ' + (result.error || 'No se pudo guardar'));
+    }
+  } catch(e) {
+    alert('Error de conexión: ' + e.message);
+  } finally {
+    document.getElementById('ms-saving').classList.remove('show');
+  }
+}
+
+// Cerrar modal con Escape
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){
+    cerrarModalSesion();
+    closeFicha();
+  }
+});
 
 // ═══════════════════════════════════════════
 // AGENDA SEMANAL
