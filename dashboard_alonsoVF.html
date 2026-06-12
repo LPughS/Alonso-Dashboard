@@ -1176,37 +1176,58 @@ let semanaOffset = 0;  // 0 = semana actual
 let diaSeleccionado = null;
 let sesionesAgenda = []; // se llena desde Sheets o demo
 
-// Sesiones demo para la agenda
-const SESIONES_AGENDA_DEMO = [
-  // Lunes
-  {fecha:'2026-06-09',hora:'07:00',cliente:'Lorraine Pugh',tipo:'per',servicio:'Rugby – fuerza'},
-  {fecha:'2026-06-09',hora:'08:00',cliente:'Willy Yancovic',tipo:'per',servicio:'Rugby – potencia'},
-  {fecha:'2026-06-09',hora:'09:00',cliente:'Carla Boero',tipo:'per',servicio:'Hockey – agilidad'},
-  // Martes
-  {fecha:'2026-06-10',hora:'07:00',cliente:'Lorraine Pugh',tipo:'per',servicio:'Rugby – velocidad'},
-  {fecha:'2026-06-10',hora:'08:00',cliente:'Willy Yancovic',tipo:'per',servicio:'Rugby – sprint'},
-  {fecha:'2026-06-10',hora:'09:00',cliente:'Carla Boero',tipo:'per',servicio:'Hockey – pases'},
-  {fecha:'2026-06-10',hora:'10:00',cliente:'Soledad Espinoza',tipo:'per',servicio:'Sedentario – core'},
-  {fecha:'2026-06-10',hora:'13:00',cliente:'Sanatorio Alemán',tipo:'cli',servicio:'Turno clínico'},
-  {fecha:'2026-06-10',hora:'19:00',cliente:'Anita Jara',tipo:'per',servicio:'Cardio + fuerza'},
-  {fecha:'2026-06-10',hora:'20:00',cliente:'Nicolás Spoerer',tipo:'per',servicio:'Rugby – explosividad'},
-  {fecha:'2026-06-10',hora:'20:30',cliente:'Grupo Funcional A',tipo:'grp',servicio:'Funcional – 13 personas'},
-  // Miércoles
-  {fecha:'2026-06-11',hora:'07:00',cliente:'Mariana Spoerer',tipo:'per',servicio:'Funcional + core'},
-  {fecha:'2026-06-11',hora:'08:00',cliente:'Magdalena Spoerer',tipo:'per',servicio:'Movilidad'},
-  {fecha:'2026-06-11',hora:'13:00',cliente:'Sanatorio Alemán',tipo:'cli',servicio:'Turno clínico'},
-  // Jueves
-  {fecha:'2026-06-12',hora:'07:00',cliente:'Lorraine Pugh',tipo:'per',servicio:'Hockey – resistencia'},
-  {fecha:'2026-06-12',hora:'08:00',cliente:'Willy Yancovic',tipo:'per',servicio:'Rugby – fuerza'},
-  {fecha:'2026-06-12',hora:'13:00',cliente:'Sanatorio Alemán',tipo:'cli',servicio:'Turno clínico'},
-  {fecha:'2026-06-12',hora:'19:00',cliente:'Solange Marisio',tipo:'per',servicio:'Hockey – base'},
-  // Viernes
-  {fecha:'2026-06-13',hora:'07:00',cliente:'Nicolás Spoerer',tipo:'per',servicio:'Rugby – técnica'},
-  {fecha:'2026-06-13',hora:'08:00',cliente:'Anita Jara',tipo:'per',servicio:'Sedentario – fuerza'},
-  {fecha:'2026-06-13',hora:'13:00',cliente:'Sanatorio Alemán',tipo:'cli',servicio:'Turno clínico'},
-  // Sábado
-  {fecha:'2026-06-14',hora:'09:30',cliente:'Grupo Funcional B',tipo:'grp',servicio:'Funcional – 10 personas'},
-];
+// Sesiones demo para la agenda — fechas dinámicas relativas a hoy
+function generarSesionesDemo(){
+  // Calcular lunes de la semana actual
+  const hoy = new Date();
+  const dia = hoy.getDay();
+  const diff = dia === 0 ? -6 : 1 - dia;
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() + diff);
+  lunes.setHours(0,0,0,0);
+
+  function ds(offsetDias){
+    const d = new Date(lunes);
+    d.setDate(lunes.getDate() + offsetDias);
+    return dateStr(d);
+  }
+
+  return [
+    // Lunes (0)
+    {fecha:ds(0),hora:'07:00',cliente:'Lorraine Pugh',tipo:'per',servicio:'Hockey – fuerza'},
+    {fecha:ds(0),hora:'08:00',cliente:'Willy Yancovic',tipo:'per',servicio:'Rugby – potencia'},
+    {fecha:ds(0),hora:'09:00',cliente:'Carla Boero',tipo:'per',servicio:'Hockey – agilidad'},
+    {fecha:ds(0),hora:'13:00',cliente:'Sanatorio Alemán',tipo:'cli',servicio:'Turno clínico'},
+    {fecha:ds(0),hora:'19:00',cliente:'Anita Jara',tipo:'per',servicio:'Cardio + fuerza'},
+    // Martes (1)
+    {fecha:ds(1),hora:'07:00',cliente:'Lorraine Pugh',tipo:'per',servicio:'Hockey – velocidad'},
+    {fecha:ds(1),hora:'08:00',cliente:'Willy Yancovic',tipo:'per',servicio:'Rugby – sprint'},
+    {fecha:ds(1),hora:'09:00',cliente:'Carla Boero',tipo:'per',servicio:'Hockey – pases'},
+    {fecha:ds(1),hora:'10:00',cliente:'Soledad Espinoza',tipo:'per',servicio:'Sedentario – core'},
+    {fecha:ds(1),hora:'13:00',cliente:'Sanatorio Alemán',tipo:'cli',servicio:'Turno clínico'},
+    {fecha:ds(1),hora:'19:00',cliente:'Anita Jara',tipo:'per',servicio:'Cardio + fuerza'},
+    {fecha:ds(1),hora:'20:00',cliente:'Nicolás Spoerer',tipo:'per',servicio:'Rugby – explosividad'},
+    {fecha:ds(1),hora:'20:30',cliente:'Grupo Funcional A',tipo:'grp',servicio:'Funcional – 13 personas'},
+    // Miércoles (2)
+    {fecha:ds(2),hora:'07:00',cliente:'Mariana Spoerer',tipo:'per',servicio:'Funcional + core'},
+    {fecha:ds(2),hora:'08:00',cliente:'Magdalena Spoerer',tipo:'per',servicio:'Movilidad'},
+    {fecha:ds(2),hora:'13:00',cliente:'Sanatorio Alemán',tipo:'cli',servicio:'Turno clínico'},
+    {fecha:ds(2),hora:'19:00',cliente:'Nicolás Spoerer',tipo:'per',servicio:'Rugby – técnica'},
+    // Jueves (3)
+    {fecha:ds(3),hora:'07:00',cliente:'Lorraine Pugh',tipo:'per',servicio:'Hockey – resistencia'},
+    {fecha:ds(3),hora:'08:00',cliente:'Willy Yancovic',tipo:'per',servicio:'Rugby – fuerza'},
+    {fecha:ds(3),hora:'13:00',cliente:'Sanatorio Alemán',tipo:'cli',servicio:'Turno clínico'},
+    {fecha:ds(3),hora:'19:00',cliente:'Solange Marisio',tipo:'per',servicio:'Hockey – base'},
+    // Viernes (4)
+    {fecha:ds(4),hora:'07:00',cliente:'Nicolás Spoerer',tipo:'per',servicio:'Rugby – técnica'},
+    {fecha:ds(4),hora:'08:00',cliente:'Anita Jara',tipo:'per',servicio:'Sedentario – fuerza'},
+    {fecha:ds(4),hora:'13:00',cliente:'Sanatorio Alemán',tipo:'cli',servicio:'Turno clínico'},
+    {fecha:ds(4),hora:'19:00',cliente:'Magdalena Spoerer',tipo:'per',servicio:'Funcional'},
+    // Sábado (5)
+    {fecha:ds(5),hora:'09:30',cliente:'Grupo Funcional B',tipo:'grp',servicio:'Funcional – 10 personas'},
+  ];
+}
+const SESIONES_AGENDA_DEMO = generarSesionesDemo();
 
 function getLunesDeSemana(offset){
   const hoy = new Date();
