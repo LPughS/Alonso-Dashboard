@@ -1655,14 +1655,15 @@ function parsearFechaSheets(val, tipo){
     const d = new Date(str);
     if(isNaN(d.getTime())) return '';
     if(tipo === 'fecha'){
-      // Ajustar zona horaria Chile (UTC-4)
+      // Para fechas: usar getUTC* para evitar doble ajuste de timezone
+      // Google Sheets envía la fecha a medianoche UTC, ajustar +4 para Chile
       const local = new Date(d.getTime() + (4 * 60 * 60 * 1000));
-      return local.getFullYear()+'-'+String(local.getMonth()+1).padStart(2,'0')+'-'+String(local.getDate()).padStart(2,'0');
+      return local.getUTCFullYear()+'-'+String(local.getUTCMonth()+1).padStart(2,'0')+'-'+String(local.getUTCDate()).padStart(2,'0');
     } else {
-      // Hora — extraer HH:MM del objeto Date
-      // Google guarda horas como fecha base 1899-12-30
-      const h = d.getUTCHours();
-      const m = d.getUTCMinutes();
+      // Hora: Google guarda como fracción del día base 1899-12-30
+      // La hora real está en getHours() local (ya ajustada por el browser)
+      const h = d.getHours();
+      const m = d.getMinutes();
       return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
     }
   }
