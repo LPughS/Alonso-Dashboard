@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard – Alonso Oliver</title>
+<style>
+  :root {
+    --bg:#e8eaed; --surface:#f2f3f5; --sw:#ffffff;
+    --border:#d0d4db; --text:#1e2330; --text2:#6b7280; --text3:#9ca3af;
+    --teal:#0d9488; --teal-lt:#ccfbf1; --teal-md:#5eead4;
+    --blue:#3b82f6; --blue-lt:#dbeafe;
+    --amber:#f59e0b; --amber-lt:#fef3c7;
+    --coral:#ef4444; --coral-lt:#fee2e2;
+    --purple:#8b5cf6; --purple-lt:#ede9fe;
+    --green:#22c55e; --green-lt:#dcfce7;
+    --radius:14px;
+    --shadow:0 1px 4px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.05);
+    --font:'Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;}
+
+  .topnav{background:var(--sw);padding:0 28px;display:flex;align-items:center;
+    justify-content:space-between;border-bottom:1px solid var(--border);height:58px;
+    position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+  .logo{font-size:1rem;font-weight:800;color:var(--teal);display:flex;align-items:center;gap:8px;}
+  .logo-dot{width:30px;height:30px;background:var(--teal);border-radius:8px;display:flex;
+    align-items:center;justify-content:center;color:#fff;font-size:.8rem;font-weight:900;}
+  .logo span{color:var(--text);font-weight:600;}
+  .nav-tabs{display:flex;gap:4px;}
+  .nav-tab{padding:7px 15px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;
+    border:none;background:transparent;color:var(--text2);transition:all .18s;display:flex;align-items:center;gap:5px;}
+  .nav-tab:hover{background:var(--bg);color:var(--text);}
+  .nav-tab.active{background:var(--teal);color:#fff;}
+  .top-right{display:flex;align-items:center;gap:10px;}
+  .top-date{font-size:.78rem;color:var(--text2);background:var(--bg);padding:5px 12px;border-radius:20px;}
+  .sync-btn{font-size:.75rem;font-weight:700;color:var(--teal);background:var(--teal-lt);
+    border:none;padding:6px 14px;border-radius:20px;cursor:pointer;transition:all .2s;}
+  .sync-btn:hover{background:var(--teal);color:#fff;}
+  .sync-status{font-size:.72rem;color:var(--text3);}
+
+  .page{display:none;padding:26px 28px 48px;}
+  .page.active{display:block;}
+
+  .stitle{font-size:.7rem;font-weight:800;color:var(--text2);text-transform:uppercase;
+    letter-spacing:1.2px;margin-bottom:14px;margin-top:28px;display:flex;align-items:center;gap:8px;}
+  .stitle:first-child{margin-top:0;}
+  .stitle::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .g5{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;}
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .g2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+
+  .card{background:var(--sw);border-radius:var(--radius);padding:20px 22px;
+    border:1px solid var(--border);box-shadow:var(--shadow);}
+
+  .kpi{position:relative;overflow:hidden;}
+  .kpi-acc{position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px;}
+  .kpi-lbl{font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;}
+  .kpi-val{font-size:2.1rem;font-weight:900;margin:6px 0 3px;line-height:1;}
+  .kpi-sub{font-size:.75rem;color:var(--text2);}
+  .up{color:var(--green)!important;font-weight:600;}
+  .dn{color:var(--coral)!important;font-weight:600;}
+
+  .pb{height:7px;background:var(--bg);border-radius:4px;overflow:hidden;margin:9px 0 4px;}
+  .pf{height:100%;border-radius:4px;}
+
+  table{width:100%;border-collapse:collapse;font-size:.82rem;}
+  thead th{text-align:left;padding:9px 12px;font-weight:700;color:var(--text2);
+    font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;
+    border-bottom:2px solid var(--bg);background:var(--surface);}
+  tbody td{padding:10px 12px;border-bottom:1px solid var(--bg);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--surface);}
+
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;
+    border-radius:20px;font-size:.7rem;font-weight:700;}
+  .b-green {background:var(--green-lt);color:#15803d;}
+  .b-yellow{background:var(--amber-lt);color:#92400e;}
+  .b-red   {background:var(--coral-lt);color:#991b1b;}
+  .b-teal  {background:var(--teal-lt); color:var(--teal);}
+  .b-blue  {background:var(--blue-lt); color:#1d4ed8;}
+  .b-purple{background:var(--purple-lt);color:#5b21b6;}
+  .b-gray  {background:var(--surface);color:var(--text2);}
+
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;}
+  .dot-g{background:var(--green);}
+  .dot-y{background:var(--amber);}
+  .dot-r{background:var(--coral);}
+
+  .er{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .el{width:140px;font-size:.75rem;color:var(--text2);}
+  .et{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;}
+  .ef{height:100%;border-radius:4px;}
+  .ev{width:50px;text-align:right;font-size:.78rem;font-weight:700;color:var(--text);}
+
+  .alerta{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;
+    border-radius:10px;margin-bottom:8px;}
+  .al-red {background:var(--coral-lt);border:1px solid #fca5a5;}
+  .al-yel {background:var(--amber-lt);border:1px solid #fcd34d;}
+  .al-name{font-weight:700;font-size:.84rem;}
+  .al-desc{font-size:.74rem;color:var(--text2);margin-top:2px;}
+
+  .sr{display:flex;justify-content:space-between;align-items:center;
+    padding:8px 0;border-bottom:1px solid var(--bg);font-size:.82rem;}
+  .sr:last-child{border-bottom:none;}
+  .sl2{color:var(--text2);}
+
+  /* HORARIO */
+  .horario{display:grid;grid-template-columns:64px repeat(5,1fr);gap:5px;font-size:.73rem;}
+  .h-hora{color:var(--text2);padding:6px 4px;text-align:right;font-weight:700;
+    font-size:.7rem;display:flex;align-items:center;justify-content:flex-end;}
+  .h-day{color:var(--text);font-weight:800;text-align:center;padding:8px 4px;
+    font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;}
+  .h-today{color:var(--teal);border-bottom:2px solid var(--teal);}
+  .slot{border-radius:8px;padding:6px 8px;min-height:40px;display:flex;
+    flex-direction:column;justify-content:center;}
+  .sl-emp {background:var(--bg);border:1.5px dashed var(--border);}
+  .sl-per {background:var(--teal-lt);border:1px solid var(--teal-md);}
+  .sl-grp {background:var(--blue-lt);border:1px solid #93c5fd;}
+  .sl-cli {background:var(--coral-lt);border:1px solid #fca5a5;}
+  .sl-free{background:var(--amber-lt);border:1px solid #fcd34d;}
+  .sn{font-weight:700;font-size:.68rem;color:var(--text);}
+  .ss{font-size:.62rem;color:var(--text2);margin-top:1px;}
+
+  .bchart{display:flex;align-items:flex-end;gap:10px;height:120px;margin-top:12px;}
+  .bcol{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;}
+  .bbar{width:100%;border-radius:5px 5px 0 0;}
+  .bmonth{font-size:.67rem;color:var(--text2);font-weight:600;}
+  .bval{font-size:.7rem;font-weight:800;}
+
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.73rem;color:var(--text2);margin-top:16px;}
+  .ldot{width:11px;height:11px;border-radius:3px;display:inline-block;margin-right:5px;vertical-align:middle;}
+
+  /* INGRESO INFO TAG */
+  .info-tag{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;
+    background:var(--surface);border:1px solid var(--border);border-radius:20px;
+    padding:3px 10px;color:var(--text2);margin-top:4px;}
+
+  /* MODAL */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;
+    align-items:center;justify-content:center;}
+  .modal-bg.open{display:flex;}
+  .modal{background:var(--sw);border-radius:18px;padding:32px;max-width:520px;width:90%;
+    box-shadow:0 20px 60px rgba(0,0,0,.2);}
+  .modal h2{font-size:1.1rem;font-weight:800;margin-bottom:6px;}
+  .modal p{font-size:.83rem;color:var(--text2);margin-bottom:18px;line-height:1.6;}
+  .modal label{font-size:.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;
+    letter-spacing:.5px;display:block;margin-bottom:6px;}
+  .modal input{width:100%;padding:10px 14px;border:1.5px solid var(--border);
+    border-radius:10px;font-size:.85rem;font-family:var(--font);margin-bottom:16px;
+    background:var(--surface);color:var(--text);outline:none;}
+  .modal input:focus{border-color:var(--teal);}
+  .modal-btns{display:flex;gap:10px;justify-content:flex-end;}
+  .btn{padding:9px 20px;border-radius:10px;font-size:.82rem;font-weight:700;
+    border:none;cursor:pointer;transition:all .18s;}
+  .btn-teal{background:var(--teal);color:#fff;}
+  .btn-teal:hover{background:#0f766e;}
+  .btn-ghost{background:var(--bg);color:var(--text2);}
+  .step{display:flex;gap:12px;margin-bottom:14px;font-size:.82rem;line-height:1.5;}
+  .step-num{min-width:24px;height:24px;background:var(--teal);color:#fff;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;margin-top:1px;flex-shrink:0;}
+
+  @media(max-width:1000px){
+    .g5,.g4{grid-template-columns:repeat(2,1fr);}
+    .g3{grid-template-columns:repeat(2,1fr);}
+  }
+
+  /* ── FICHA PANEL ── */
+  .ficha-overlay{display:none;position:fixed;inset:0;background:rgba(30,35,48,.45);
+    z-index:300;backdrop-filter:blur(2px);}
+  .ficha-overlay.open{display:block;}
+  .ficha-panel{position:fixed;top:0;right:-480px;width:460px;height:100vh;
+    background:var(--sw);border-left:1px solid var(--border);z-index:301;
+    display:flex;flex-direction:column;transition:right .28s cubic-bezier(.4,0,.2,1);
+    box-shadow:-8px 0 32px rgba(0,0,0,.12);}
+  .ficha-panel.open{right:0;}
+  .ficha-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);
+    display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0;gap:12px;}
+  .ficha-avatar{width:48px;height:48px;border-radius:12px;background:var(--teal);
+    display:flex;align-items:center;justify-content:center;font-size:1.1rem;
+    font-weight:900;color:#fff;flex-shrink:0;}
+  .ficha-name{font-size:1rem;font-weight:800;color:var(--text);margin-bottom:3px;}
+  .ficha-sub{font-size:.75rem;color:var(--text2);}
+  .ficha-close{width:30px;height:30px;border-radius:8px;border:none;background:var(--bg);
+    cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;
+    color:var(--text2);transition:all .15s;flex-shrink:0;}
+  .ficha-close:hover{background:var(--coral-lt);color:var(--coral);}
+  .ficha-body{flex:1;overflow-y:auto;padding:20px 24px;}
+  .ficha-section{margin-bottom:22px;}
+  .ficha-stitle{font-size:.67rem;font-weight:800;color:var(--text2);text-transform:uppercase;
+    letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .ficha-stitle::after{content:'';flex:1;height:1px;background:var(--border);}
+  .ficha-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .ficha-field{background:var(--surface);border-radius:8px;padding:9px 12px;}
+  .ficha-field.full{grid-column:span 2;}
+  .ff-lbl{font-size:.63rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+  .ff-val{font-size:.82rem;font-weight:600;color:var(--text);}
+  .ff-val a{color:var(--teal);text-decoration:none;}
+  .ff-val a:hover{text-decoration:underline;}
+  .pak-wrap{background:var(--surface);border-radius:10px;padding:14px 16px;margin-bottom:8px;}
+  .pak-row{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;margin-bottom:8px;}
+  .pak-num{font-size:1.8rem;font-weight:900;color:var(--teal);line-height:1;}
+  .pak-lbl{font-size:.7rem;color:var(--text2);margin-top:2px;}
+  .pb2{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;margin-top:10px;}
+  .pf2{height:100%;border-radius:4px;transition:width .4s;}
+  .ses-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--bg);}
+  .ses-item:last-child{border-bottom:none;}
+  .ses-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+  .ses-meta{font-size:.72rem;color:var(--text2);font-weight:600;white-space:nowrap;}
+  .ses-obs{font-size:.79rem;color:var(--text);line-height:1.4;margin-top:2px;}
+  .ses-badge{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block;margin-top:3px;}
+  .nota-input{width:100%;border:1.5px solid var(--border);border-radius:10px;
+    padding:9px 12px;font-size:.82rem;font-family:var(--font);resize:none;
+    background:var(--surface);color:var(--text);outline:none;min-height:68px;}
+  .nota-input:focus{border-color:var(--teal);}
+  .nota-btn{margin-top:8px;padding:8px 18px;background:var(--teal);color:#fff;
+    border:none;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .18s;}
+  .nota-btn:hover{background:#0f766e;}
+  .rc{cursor:pointer;transition:background .12s;}
+  .rc:hover td{background:var(--teal-lt)!important;}
+  .hint-click{font-size:.7rem;color:var(--text3);font-style:italic;margin-top:8px;text-align:right;}
+</style>
+</head>
+<body>
+
+<!-- FICHA OVERLAY -->
+<div class="ficha-overlay" id="fichaOverlay" onclick="closeFicha()"></div>
+
+<!-- FICHA PANEL -->
+<div class="ficha-panel" id="fichaPanel">
+  <div class="ficha-header">
+    <div style="display:flex;gap:12px;align-items:flex-start;flex:1;min-width:0">
+      <div class="ficha-avatar" id="fp-avatar">AO</div>
+      <div style="min-width:0">
+        <div class="ficha-name" id="fp-name">—</div>
+        <div class="ficha-sub" id="fp-sub">—</div>
+      </div>
+    </div>
+    <button class="ficha-close" onclick="closeFicha()">✕</button>
+  </div>
+  <div class="ficha-body" id="fp-body"></div>
+</div>
+
+
+<!-- MODAL SHEETS -->
+<div class="modal-bg" id="sheetsModal">
+  <div class="modal">
+    <h2>🔗 Conectar Google Sheets</h2>
+    <p>Conecta tu planilla y el dashboard se actualizará automáticamente.</p>
+    <div class="step"><div class="step-num">1</div><div>En tu Google Sheet: <strong>Archivo → Compartir → Publicar en la web</strong> → selecciona cada hoja en CSV → <strong>Publicar</strong>.</div></div>
+    <div class="step"><div class="step-num">2</div><div>Copia el ID de la URL: <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:.78rem">docs.google.com/spreadsheets/d/<strong>ID_AQUÍ</strong>/edit</code></div></div>
+    <div class="step"><div class="step-num">3</div><div>Pégalo abajo y guarda. El dashboard lo recordará en este navegador.</div></div>
+    <div style="margin-bottom:16px;padding:12px 14px;background:var(--teal-lt);border-radius:10px;font-size:.78rem;color:var(--teal)">
+      📥 <strong>Hojas necesarias:</strong> Pacientes · Sesiones · Clientes_PT · Grupos<br>
+      <a href="#" onclick="downloadTemplate();return false;" style="color:var(--teal);font-weight:700;text-decoration:underline">Descargar plantillas CSV de ejemplo →</a>
+    </div>
+    <label>ID de Google Sheet</label>
+    <input type="text" id="sheetIdInput" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" />
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-teal" onclick="saveSheetId()">Guardar y sincronizar</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="topnav">
+  <div class="logo">
+    <div class="logo-dot">AO</div>
+    <span>Alonso Oliver</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="show('hoy',this)">🏠 Hoy</button>
+    <button class="nav-tab" onclick="show('pt',this)">🏋️ Personal Training</button>
+    <button class="nav-tab" onclick="show('grupos',this)">👥 Grupos</button>
+    <button class="nav-tab" onclick="show('clinica',this)">🩺 Clínica</button>
+    <button class="nav-tab" onclick="show('negocio',this)">📈 Negocio</button>
+  </div>
+  <div class="top-right">
+    <span class="sync-status" id="syncStatus">Demo — sin Sheets</span>
+    <button class="sync-btn" onclick="openModal()">⚙ Conectar Sheets</button>
+    <div class="top-date" id="topDate"></div>
+  </div>
+</nav>
+
+<!-- ══════════ HOY ══════════ -->
+<div class="page active" id="page-hoy">
+
+  <div class="stitle">Vista del día</div>
+  <div class="g5">
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--teal)"></div>
+      <div class="kpi-lbl">Sesiones PT hoy</div>
+      <div class="kpi-val" style="color:var(--teal)">6</div>
+      <div class="kpi-sub">5 confirmadas · 1 sin confirmar</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--blue)"></div>
+      <div class="kpi-lbl">Turno Sanatorio</div>
+      <div class="kpi-val" style="color:var(--blue)">13–18h</div>
+      <div class="kpi-sub">Sanatorio Alemán</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--green)"></div>
+      <div class="kpi-lbl">Ingresos PT hoy</div>
+      <div class="kpi-val" style="color:var(--green)">$60k</div>
+      <div class="kpi-sub up">6 sesiones × $10k</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--coral)"></div>
+      <div class="kpi-lbl">Horas libres</div>
+      <div class="kpi-val" style="color:var(--coral)">1</div>
+      <div class="kpi-sub">11:00 disponible</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--amber)"></div>
+      <div class="kpi-lbl">Alertas</div>
+      <div class="kpi-val" style="color:var(--amber)">2</div>
+      <div class="kpi-sub">Clientes sin reagendar</div>
+    </div>
+  </div>
+
+  <div class="stitle">Agenda de hoy — Martes</div>
+  <div class="card">
+    <table>
+      <thead><tr><th>Hora</th><th>Cliente</th><th>Deporte / Perfil</th><th>Sesión</th><th>Estado</th></tr></thead>
+      <tbody>
+        <tr><td>07:00</td><td><strong>Lorraine Pugh</strong></td><td>Rugby</td><td>7 / 12</td><td><span class="badge b-green"><span class="dot dot-g"></span>Confirmada</span></td></tr>
+        <tr><td>08:00</td><td><strong>Willy Yancovic</strong></td><td>Rugby</td><td>4 / 12</td><td><span class="badge b-green"><span class="dot dot-g"></span>Confirmada</span></td></tr>
+        <tr><td>09:00</td><td><strong>Carla Boero</strong></td><td>Hockey</td><td>10 / 12</td><td><span class="badge b-green"><span class="dot dot-g"></span>Confirmada</span></td></tr>
+        <tr><td>10:00</td><td><strong>Soledad Espinoza</strong></td><td>Sedentario activo</td><td>3 / 12</td><td><span class="badge b-green"><span class="dot dot-g"></span>Confirmada</span></td></tr>
+        <tr><td>11:00</td><td style="color:var(--text3)">—</td><td>—</td><td>—</td><td><span class="badge b-yellow">Disponible</span></td></tr>
+        <tr><td style="color:var(--coral);font-weight:700">13:00 – 18:00</td><td colspan="3" style="font-weight:700;color:var(--coral)">🏥 Sanatorio Alemán — Turno clínico</td><td><span class="badge b-red">Clínica</span></td></tr>
+        <tr><td>19:00</td><td><strong>Anita Jara</strong></td><td>Sedentario activo</td><td>9 / 12</td><td><span class="badge b-green"><span class="dot dot-g"></span>Confirmada</span></td></tr>
+        <tr><td>20:00</td><td><strong>Nicolás Spoerer</strong></td><td>Rugby</td><td>2 / 12</td><td><span class="badge b-yellow"><span class="dot dot-y"></span>Sin confirmar</span></td></tr>
+        <tr><td>20:30</td><td><strong>Grupo Funcional A</strong></td><td colspan="2">Clase funcional en circuitos — Country Club · 13 asistentes</td><td><span class="badge b-blue">Club paga</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="stitle">⚠️ Alertas activas</div>
+  <div class="alerta al-red">
+    <div style="font-size:1.2rem">🔴</div>
+    <div><div class="al-name">Solange Marisio</div><div class="al-desc">Sin sesión hace 16 días · Última: 25 mayo · Tiene 6 sesiones restantes del paquete</div></div>
+  </div>
+  <div class="alerta al-yel">
+    <div style="font-size:1.2rem">🟡</div>
+    <div><div class="al-name">Magdalena Spoerer</div><div class="al-desc">Faltó 2 martes seguidos · Sin reagendar · Le quedan 5 sesiones</div></div>
+  </div>
+</div>
+
+<!-- ══════════ PERSONAL TRAINING ══════════ -->
+<div class="page" id="page-pt">
+
+  <div class="stitle">Resumen general</div>
+  <div class="g4">
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--teal)"></div>
+      <div class="kpi-lbl">Clientes activos</div>
+      <div class="kpi-val" style="color:var(--teal)">9</div>
+      <div class="kpi-sub">Country Club</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--green)"></div>
+      <div class="kpi-lbl">Paquetes activos</div>
+      <div class="kpi-val" style="color:var(--green)">9</div>
+      <div class="kpi-sub">12 sesiones c/u</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--amber)"></div>
+      <div class="kpi-lbl">Sesiones este mes</div>
+      <div class="kpi-val" style="color:var(--amber)">38</div>
+      <div class="kpi-sub">de ~52 programadas</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--coral)"></div>
+      <div class="kpi-lbl">Paquetes por renovar</div>
+      <div class="kpi-val" style="color:var(--coral)">2</div>
+      <div class="kpi-sub">Carla · Anita (≤3 ses.)</div>
+    </div>
+  </div>
+
+  <div class="stitle">Estado de paquetes — clientes</div>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Perfil</th>
+          <th>Paquete</th>
+          <th>Precio</th>
+          <th>Sesiones usadas</th>
+          <th>Sesiones restantes</th>
+          <th>Vencimiento aprox.</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-pt"></tbody>
+    </table>
+    <div class="hint-click">👆 Haz clic en un cliente para ver su ficha completa</div>
+  </div>
+
+  <div class="stitle">Distribución de ingresos PT</div>
+  <div class="g2">
+    <div class="card">
+      <div style="font-size:.72rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px">Valor por sesión efectiva</div>
+      <div class="er"><div class="el">Socios Country Club</div><div class="et"><div class="ef" style="width:80%;background:var(--teal)"></div></div><div class="ev">$10.000</div></div>
+      <div class="er"><div class="el">No socios</div><div class="et"><div class="ef" style="width:100%;background:var(--blue)"></div></div><div class="ev">$12.500</div></div>
+      <div style="margin-top:14px;padding:10px 14px;background:var(--surface);border-radius:8px;font-size:.78rem;color:var(--text2)">
+        Paquete estándar: <strong>$120.000 / 12 sesiones</strong> (socios)<br>
+        Paquete sin socio: <strong>$150.000 / 12 sesiones</strong> (Soledad Espinoza)
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:.72rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Ingreso mensual estimado PT</div>
+      <div style="font-size:2rem;font-weight:900;color:var(--teal)">$1.080.000</div>
+      <div style="font-size:.75rem;color:var(--text2);margin-bottom:14px">8 socios × $120k + 1 × $150k</div>
+      <div class="sr"><span class="sl2">Ingreso por sesión promedio</span><span style="font-weight:800">$10.417</span></div>
+      <div class="sr"><span class="sl2">Total sesiones mensuales</span><span style="font-weight:800">~104</span></div>
+      <div class="sr"><span class="sl2">Renovación promedio</span><span style="font-weight:800;color:var(--green)">Mensual</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ GRUPOS ══════════ -->
+<div class="page" id="page-grupos">
+
+  <div class="stitle">Clases funcionales — Country Club</div>
+  <div class="g4">
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--blue)"></div>
+      <div class="kpi-lbl">Clases semanales</div>
+      <div class="kpi-val" style="color:var(--blue)">2</div>
+      <div class="kpi-sub">Mar 20:30 · Sáb 9:30</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--teal)"></div>
+      <div class="kpi-lbl">Asistentes prom. / clase</div>
+      <div class="kpi-val" style="color:var(--teal)">11</div>
+      <div class="kpi-sub">Cupo máx: 15</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--green)"></div>
+      <div class="kpi-lbl">Pago del Club / mes</div>
+      <div class="kpi-val" style="color:var(--green)">$320k</div>
+      <div class="kpi-sub">Clases para socios</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--purple)"></div>
+      <div class="kpi-lbl">Clases este mes</div>
+      <div class="kpi-val" style="color:var(--purple)">8</div>
+      <div class="kpi-sub">4 mar · 4 sáb</div>
+    </div>
+  </div>
+
+
+
+  <div class="stitle">Ocupación por clase</div>
+  <div class="card">
+    <table>
+      <thead><tr><th>Clase / Horario</th><th>Cupo máx.</th><th>Asistencia prom.</th><th>Última clase</th><th>Ocupación</th><th>Estado</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Martes 20:30</strong> — Funcional A</td><td>15</td><td>13</td><td>13 asistentes</td>
+          <td><div class="pb"><div class="pf" style="width:87%;background:var(--green)"></div></div><span style="font-size:.73rem;color:var(--green);font-weight:700">87%</span></td>
+          <td><span class="badge b-green">Muy buena</span></td>
+        </tr>
+        <tr>
+          <td><strong>Sábado 9:30</strong> — Funcional B</td><td>15</td><td>9</td><td>10 asistentes</td>
+          <td><div class="pb"><div class="pf" style="width:60%;background:var(--amber)"></div></div><span style="font-size:.73rem;color:var(--amber);font-weight:700">60%</span></td>
+          <td><span class="badge b-yellow">Puede crecer</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="stitle">Asistencia últimas 4 semanas</div>
+  <div class="card">
+    <table>
+      <thead><tr><th>Semana</th><th>Mar 20:30</th><th>Sáb 9:30</th><th>Total</th></tr></thead>
+      <tbody>
+        <tr><td>20–24 mayo</td><td>12</td><td>8</td><td><strong>20</strong></td></tr>
+        <tr><td>27–31 mayo</td><td>14</td><td>9</td><td><strong>23</strong></td></tr>
+        <tr><td>3–7 junio</td><td>11</td><td>10</td><td><strong>21</strong></td></tr>
+        <tr><td>Esta semana</td><td><strong>13</strong></td><td>—</td><td><strong>13</strong> (en curso)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════ CLÍNICA ══════════ -->
+<div class="page" id="page-clinica">
+
+  <div class="stitle">Sanatorio Alemán — Resumen clínico</div>
+  <div class="g4">
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--teal)"></div>
+      <div class="kpi-lbl">Pacientes activos</div>
+      <div class="kpi-val" style="color:var(--teal)">24</div>
+      <div class="kpi-sub up">↑ 3 nuevos este mes</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--green)"></div>
+      <div class="kpi-lbl">Altas este mes</div>
+      <div class="kpi-val" style="color:var(--green)">5</div>
+      <div class="kpi-sub">Tasa alta: 18%</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--amber)"></div>
+      <div class="kpi-lbl">Adherencia terapéutica</div>
+      <div class="kpi-val" style="color:var(--amber)">78%</div>
+      <div class="kpi-sub dn">↓ Meta: 85%</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--blue)"></div>
+      <div class="kpi-lbl">EVA promedio actual</div>
+      <div class="kpi-val" style="color:var(--blue)">3.1</div>
+      <div class="kpi-sub">Ingreso: 7.4 promedio</div>
+    </div>
+  </div>
+
+  <div class="stitle">Distribución clínica</div>
+  <div class="g2">
+    <div class="card">
+      <div style="font-size:.72rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px">Motivos de consulta</div>
+      <div class="er"><div class="el">Rodilla</div><div class="et"><div class="ef" style="width:35%;background:var(--teal)"></div></div><div class="ev">35%</div></div>
+      <div class="er"><div class="el">Columna lumbar</div><div class="et"><div class="ef" style="width:22%;background:var(--blue)"></div></div><div class="ev">22%</div></div>
+      <div class="er"><div class="el">Hombro</div><div class="et"><div class="ef" style="width:18%;background:var(--amber)"></div></div><div class="ev">18%</div></div>
+      <div class="er"><div class="el">Post operatorio</div><div class="et"><div class="ef" style="width:12%;background:var(--coral)"></div></div><div class="ev">12%</div></div>
+      <div class="er"><div class="el">Tobillo / Cervical</div><div class="et"><div class="ef" style="width:13%;background:var(--purple)"></div></div><div class="ev">13%</div></div>
+    </div>
+    <div class="card">
+      <div style="font-size:.72rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px">Evolución EVA — promedio pacientes activos</div>
+      <div class="er"><div class="el">Semana 1 (ingreso)</div><div class="et"><div class="ef" style="width:74%;background:var(--coral)"></div></div><div class="ev">7.4</div></div>
+      <div class="er"><div class="el">Semana 2</div><div class="et"><div class="ef" style="width:60%;background:#f97316"></div></div><div class="ev">6.0</div></div>
+      <div class="er"><div class="el">Semana 3</div><div class="et"><div class="ef" style="width:45%;background:var(--amber)"></div></div><div class="ev">4.5</div></div>
+      <div class="er"><div class="el">Actual</div><div class="et"><div class="ef" style="width:31%;background:var(--teal)"></div></div><div class="ev">3.1</div></div>
+      <div style="margin-top:14px;padding:10px 14px;background:var(--teal-lt);border-radius:8px;font-size:.8rem;font-weight:700;color:var(--teal)">↓ 58% reducción promedio del dolor</div>
+    </div>
+  </div>
+
+  <div class="stitle">Seguimiento de pacientes</div>
+  <div class="card">
+    <table>
+      <thead><tr><th>Paciente</th><th>Diagnóstico</th><th>Sesiones</th><th>Últ. sesión</th><th>Próxima</th><th>EVA</th><th>Estado</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Diego Mansilla</strong></td><td>Rodilla – LCA</td><td>12 / 20</td><td>Hoy</td><td>Jueves</td><td>3.0</td><td><span class="badge b-green">En curso</span></td></tr>
+        <tr><td><strong>Valentina Ríos</strong></td><td>Lumbar crónico</td><td>8 / 15</td><td>Lunes</td><td>Mañana</td><td>4.2</td><td><span class="badge b-green">En curso</span></td></tr>
+        <tr><td><strong>Javier Soto</strong></td><td>Hombro – manguito</td><td>3 / 12</td><td>23 mayo</td><td>Sin agendar</td><td>6.5</td><td><span class="badge b-red">Riesgo</span></td></tr>
+        <tr><td><strong>Fernanda Muñoz</strong></td><td>Cervical</td><td>5 / 10</td><td>28 mayo</td><td>Sin agendar</td><td>5.0</td><td><span class="badge b-red">Riesgo</span></td></tr>
+        <tr><td><strong>Cristóbal Vega</strong></td><td>Post op rodilla</td><td>10 / 16</td><td>31 mayo</td><td>Viernes</td><td>2.8</td><td><span class="badge b-yellow">Atención</span></td></tr>
+        <tr><td><strong>Camila Torres</strong></td><td>Tobillo esguince</td><td>6 / 8</td><td>Hoy</td><td>Jueves</td><td>1.5</td><td><span class="badge b-teal">Alta próxima</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════ NEGOCIO ══════════ -->
+<div class="page" id="page-negocio">
+
+  <div class="stitle">Resumen financiero — Junio 2025</div>
+  <div class="g4">
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--teal)"></div>
+      <div class="kpi-lbl">Ingreso total del mes</div>
+      <div class="kpi-val" style="color:var(--teal)">$1.74M</div>
+      <div class="pb"><div class="pf" style="width:79%;background:var(--teal)"></div></div>
+      <div style="font-size:.72rem;font-weight:700;color:var(--teal)">79% de meta $2.2M</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--green)"></div>
+      <div class="kpi-lbl">PT — Personal training</div>
+      <div class="kpi-val" style="color:var(--green)">$1.09M</div>
+      <div class="kpi-sub">9 clientes × paquete</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--blue)"></div>
+      <div class="kpi-lbl">Clases grupales (Club)</div>
+      <div class="kpi-val" style="color:var(--blue)">$320k</div>
+      <div class="kpi-sub">Pago Country Club</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-acc" style="background:var(--coral)"></div>
+      <div class="kpi-lbl">Sanatorio Alemán</div>
+      <div class="kpi-val" style="color:var(--coral)">$330k</div>
+      <div class="kpi-sub">Honorarios clínica</div>
+    </div>
+  </div>
+
+  <div class="stitle">Composición de ingresos y tendencia</div>
+  <div class="g2">
+    <div class="card">
+      <div style="font-size:.72rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px">Fuentes de ingreso</div>
+      <div class="er"><div class="el">Personal training</div><div class="et"><div class="ef" style="width:63%;background:var(--teal)"></div></div><div class="ev">63%</div></div>
+      <div class="er"><div class="el">Grupos (Club paga)</div><div class="et"><div class="ef" style="width:18%;background:var(--blue)"></div></div><div class="ev">18%</div></div>
+      <div class="er"><div class="el">Clínica Sanatorio</div><div class="et"><div class="ef" style="width:19%;background:var(--coral)"></div></div><div class="ev">19%</div></div>
+      <div style="margin-top:16px;padding:12px 14px;background:var(--surface);border-radius:10px;font-size:.78rem;color:var(--text2);line-height:1.7">
+        <strong style="color:var(--text)">Ingreso por hora trabajada</strong><br>
+        PT (mañana): <strong>$10.000/hr</strong> · PT (tarde): <strong>$10.000/hr</strong><br>
+        Clínica: <strong>~$5.500/hr</strong> · Grupos: <strong>~$13.300/clase</strong>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:.72rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Últimos 6 meses (miles CLP)</div>
+      <div class="bchart">
+        <div class="bcol"><div class="bval" style="color:var(--text2)">1.4</div><div class="bbar" style="height:55%;background:var(--bg);border:1px solid var(--border)"></div><div class="bmonth">Ene</div></div>
+        <div class="bcol"><div class="bval" style="color:var(--text2)">1.6</div><div class="bbar" style="height:64%;background:var(--bg);border:1px solid var(--border)"></div><div class="bmonth">Feb</div></div>
+        <div class="bcol"><div class="bval" style="color:var(--text2)">1.9</div><div class="bbar" style="height:76%;background:var(--bg);border:1px solid var(--border)"></div><div class="bmonth">Mar</div></div>
+        <div class="bcol"><div class="bval" style="color:var(--text2)">1.7</div><div class="bbar" style="height:68%;background:var(--bg);border:1px solid var(--border)"></div><div class="bmonth">Abr</div></div>
+        <div class="bcol"><div class="bval" style="color:var(--blue)">2.0</div><div class="bbar" style="height:80%;background:var(--blue)"></div><div class="bmonth">May</div></div>
+        <div class="bcol"><div class="bval" style="color:var(--teal)">1.74</div><div class="bbar" style="height:70%;background:var(--teal)"></div><div class="bmonth" style="color:var(--teal);font-weight:700">Jun ◀</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════ TABLA PT ═══════════════════════
+const CLIENTES_PT = [
+  {nombre:"Lorraine Pugh",    perfil:"Rugby",            precio:120000,usadas:7, venc:"~28 jun",
+   celular:"+56 9 8811 2233",email:"lorraine.pugh@gmail.com",emergencia:"Tom Pugh +56 9 8811 9900",
+   nivel:"Competitivo",parq:"Sí ✓",lesiones:"Tobillo der. (2022)",condiciones:"Ninguna",peso:65,talla:162,grasa:22,obs:"Leve hiperlordosis"},
+  {nombre:"Carla Boero",      perfil:"Hockey",           precio:120000,usadas:10,venc:"~15 jun",
+   celular:"+56 9 7722 3344",email:"carla.boero@gmail.com",emergencia:"Luis Boero +56 9 7722 0011",
+   nivel:"Competitivo",parq:"Sí ✓",lesiones:"Hombro izq. (2021)",condiciones:"Ninguna",peso:58,talla:158,grasa:19,obs:"Sin observaciones"},
+  {nombre:"Soledad Espinoza", perfil:"Sedentario activo",precio:150000,usadas:3, venc:"~20 jul",
+   celular:"+56 9 6633 4455",email:"soledad.espinoza@gmail.com",emergencia:"Pedro Espinoza +56 9 6633 0022",
+   nivel:"Bajo",parq:"Sí ✓",lesiones:"Rodilla der. (2019)",condiciones:"HTA controlada",peso:72,talla:165,grasa:28,obs:"Fwd head posture"},
+  {nombre:"Willy Yancovic",   perfil:"Rugby",            precio:120000,usadas:4, venc:"~10 jul",
+   celular:"+56 9 5544 5566",email:"willy.yancovic@gmail.com",emergencia:"Ana Yancovic +56 9 5544 0033",
+   nivel:"Competitivo",parq:"Sí ✓",lesiones:"Ninguna conocida",condiciones:"Ninguna",peso:88,talla:180,grasa:16,obs:"Sin observaciones"},
+  {nombre:"Solange Marisio",  perfil:"Hockey",           precio:120000,usadas:6, venc:"Sin agendar",
+   celular:"+56 9 4455 6677",email:"solange.marisio@gmail.com",emergencia:"Raúl Marisio +56 9 4455 0044",
+   nivel:"Recreativo",parq:"Sí ✓",lesiones:"Esguince tobillo (2023)",condiciones:"Ninguna",peso:55,talla:160,grasa:21,obs:"Sin observaciones"},
+  {nombre:"Anita Jara",       perfil:"Sedentario activo",precio:120000,usadas:9, venc:"~20 jun",
+   celular:"+56 9 3366 7788",email:"anita.jara@gmail.com",emergencia:"Carlos Jara +56 9 3366 0055",
+   nivel:"Bajo",parq:"Sí ✓",lesiones:"Lumbar crónico",condiciones:"Sobrepeso leve",peso:68,talla:155,grasa:30,obs:"Ant. pelvic tilt"},
+  {nombre:"Nicolás Spoerer",  perfil:"Rugby",            precio:120000,usadas:2, venc:"~31 jul",
+   celular:"+56 9 2277 8899",email:"nicolas.spoerer@gmail.com",emergencia:"Familia Spoerer +56 9 2277 0066",
+   nivel:"Competitivo",parq:"Sí ✓",lesiones:"Ninguna conocida",condiciones:"Ninguna",peso:82,talla:178,grasa:14,obs:"Sin observaciones"},
+  {nombre:"Mariana Spoerer",  perfil:"Sedentario activo",precio:120000,usadas:5, venc:"~5 jul",
+   celular:"+56 9 1188 9900",email:"mariana.spoerer@gmail.com",emergencia:"Familia Spoerer +56 9 2277 0066",
+   nivel:"Bajo",parq:"Sí ✓",lesiones:"Ninguna conocida",condiciones:"Ninguna",peso:57,talla:163,grasa:24,obs:"Sin observaciones"},
+  {nombre:"Magdalena Spoerer",perfil:"Sedentario activo",precio:120000,usadas:7, venc:"Sin agendar",
+   celular:"+56 9 9900 1122",email:"magdalena.spoerer@gmail.com",emergencia:"Familia Spoerer +56 9 2277 0066",
+   nivel:"Bajo",parq:"Sí ✓",lesiones:"Ninguna conocida",condiciones:"Ninguna",peso:60,talla:161,grasa:23,obs:"Sin observaciones"},
+];
+
+function renderTablaPT(){
+  const tbody = document.getElementById('tabla-pt');
+  tbody.innerHTML = CLIENTES_PT.map(c=>{
+    const restantes = 12 - c.usadas;
+    const pctUso = Math.round(c.usadas/12*100);
+    let bclass='b-green', blabel='Al día';
+    if(c.venc==='Sin agendar'){bclass='b-red';blabel='Sin reagendar';}
+    else if(restantes<=3){bclass='b-yellow';blabel='Por renovar';}
+    const esSocio = c.precio===120000;
+    return `<tr class="rc" onclick="openFicha('${c.nombre}')">
+      <td><strong style="color:var(--teal)">${c.nombre}</strong>${!esSocio?'<br><span class="info-tag">No socia</span>':''}</td>
+      <td>${c.perfil}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;max-width:80px">
+            <div class="pb" style="margin:0"><div class="pf" style="width:${pctUso}%;background:var(--teal)"></div></div>
+          </div>
+          <span style="font-size:.75rem;color:var(--text2)">${c.usadas}/12</span>
+        </div>
+      </td>
+      <td><strong>$${(c.precio/1000).toFixed(0)}k</strong></td>
+      <td style="text-align:center;font-weight:700;color:var(--teal)">${c.usadas}</td>
+      <td style="text-align:center;font-weight:700;color:${restantes<=3?'var(--coral)':'var(--green)'}">${restantes}</td>
+      <td style="font-size:.78rem;color:var(--text2)">${c.venc}</td>
+      <td><span class="badge ${bclass}">${blabel}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════ NAV ═══════════════════════
+function show(id, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ═══════════════════════ SHEETS ═══════════════════════
+const LS_KEY = 'alonso_sheet_id';
+function openModal(){ document.getElementById('sheetsModal').classList.add('open');
+  const s=localStorage.getItem(LS_KEY); if(s) document.getElementById('sheetIdInput').value=s; }
+function closeModal(){ document.getElementById('sheetsModal').classList.remove('open'); }
+function saveSheetId(){
+  const id=document.getElementById('sheetIdInput').value.trim();
+  if(!id){alert('Pega el ID de tu Google Sheet');return;}
+  localStorage.setItem(LS_KEY,id);
+  closeModal();
+  syncSheets();
+}
+
+// ── Lee una hoja publicada como CSV ──
+async function fetchSheet(sheetId, sheetName){
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error(`No se pudo leer "${sheetName}"`);
+  return parseCSV(await res.text());
+}
+
+function splitCSVLine(line){
+  const vals=[]; let cur='', inQ=false;
+  for(const ch of line){
+    if(ch==='"'){inQ=!inQ;}
+    else if(ch===','&&!inQ){vals.push(cur.trim());cur='';}
+    else cur+=ch;
+  }
+  vals.push(cur.trim());
+  return vals.map(v=>v.replace(/^"|"$/g,'').trim());
+}
+
+function parseCSV(text){
+  const lines = text.trim().split('\n').filter(l=>l.trim());
+
+  // Detectar fila real de encabezados: la primera fila que tenga
+  // "Nombre" o "Fecha" o "Nombre completo" como primera columna
+  const headerKeywords = ['nombre','fecha','nombre completo'];
+  let headerIdx = 0;
+  for(let i=0; i<Math.min(lines.length,6); i++){
+    const first = splitCSVLine(lines[i])[0].toLowerCase().replace(/"/g,'').trim();
+    if(headerKeywords.some(k=>first.includes(k))){
+      headerIdx = i;
+      break;
+    }
+  }
+
+  const headers = splitCSVLine(lines[headerIdx]);
+  return lines.slice(headerIdx+1).filter(l=>{
+    // Filtrar filas vacías o de sección decorativa (primera celda con emoji o vacía)
+    const first = splitCSVLine(l)[0];
+    return first && !first.startsWith('📋') && !first.startsWith('🏃') &&
+           !first.startsWith('📏') && !first.startsWith('🩺') &&
+           !first.startsWith('📊') && !first.startsWith('💰') &&
+           !first.startsWith('⚠') && !first.startsWith('📦') &&
+           !first.startsWith('📅') && first.length > 0;
+  }).map(line=>{
+    const vals = splitCSVLine(line);
+    const obj={};
+    headers.forEach((h,i)=>{ obj[h]=(vals[i]||'').trim(); });
+    return obj;
+  }).filter(obj=>{
+    // Filtrar filas donde Nombre completo (o primera columna) está vacío
+    const firstKey = Object.keys(obj)[0];
+    return obj[firstKey] && obj[firstKey].length > 0;
+  });
+}
+
+async function syncSheets(){
+  const sheetId = localStorage.getItem(LS_KEY);
+  if(!sheetId) return;
+
+  const status = document.getElementById('syncStatus');
+  status.textContent = '⟳ Sincronizando…';
+  status.style.color = 'var(--amber)';
+
+  try {
+    // Leer todas las hojas relevantes en paralelo
+    const [clientesRaw, paquetesRaw, sesionesRaw] = await Promise.all([
+      fetchSheet(sheetId, 'Clientes_PT'),
+      fetchSheet(sheetId, 'Paquetes_PT'),
+      fetchSheet(sheetId, 'Sesiones_PT'),
+    ]);
+
+    // Actualizar tabla PT si hay datos reales
+    if(clientesRaw.length){
+      actualizarTablaPT(clientesRaw, paquetesRaw);
+    }
+
+    // Actualizar sesiones en SESIONES_DEMO para fichas
+    actualizarSesionesFicha(sesionesRaw);
+
+    status.textContent = '✓ Sheets conectado · ' + new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+    status.style.color = 'var(--teal)';
+
+  } catch(e) {
+    console.error(e);
+    status.textContent = '⚠ Error al leer Sheets';
+    status.style.color = 'var(--coral)';
+  }
+}
+
+function limpiarNum(str){
+  // Convierte "$120.000" o "-5" o "120000" a número limpio
+  if(!str) return 0;
+  return parseInt(String(str).replace(/[$.]/g,'').replace(/\s/g,'')) || 0;
+}
+
+function actualizarTablaPT(clientesRaw, paquetesRaw){
+  // Fusiona Clientes_PT (perfil, datos personales)
+  clientesRaw.forEach(row => {
+    const nombre = row['Nombre completo'] || row['Nombre'] || '';
+    const local = CLIENTES_PT.find(c => c.nombre === nombre);
+    if(local){
+      if(row['Deporte / Actividad']) local.perfil = row['Deporte / Actividad'];
+      if(row['Celular'])             local.celular = row['Celular'];
+      if(row['Correo electrónico'])  local.email   = row['Correo electrónico'];
+      if(row['Contacto emergencia']) local.emergencia = row['Contacto emergencia'];
+      if(row['Nivel previo'])        local.nivel   = row['Nivel previo'];
+      if(row['Lesiones previas'])    local.lesiones = row['Lesiones previas'];
+      if(row['Condiciones médicas']) local.condiciones = row['Condiciones médicas'];
+      if(row['Peso (kg)'])           local.peso    = parseFloat(row['Peso (kg)']) || local.peso;
+      if(row['Talla (cm)'])          local.talla   = parseFloat(row['Talla (cm)']) || local.talla;
+      if(row['% Grasa est.'])        local.grasa   = parseFloat(row['% Grasa est.']) || local.grasa;
+      if(row['Obs. posturales'])     local.obs     = row['Obs. posturales'];
+    }
+  });
+
+  // Fusiona Paquetes_PT (sesiones, precio, vencimiento)
+  if(paquetesRaw && paquetesRaw.length){
+    paquetesRaw.forEach(row => {
+      const nombre = row['Nombre completo'] || row['Nombre'] || '';
+      const local = CLIENTES_PT.find(c => c.nombre === nombre);
+      if(local){
+        const realizadas = limpiarNum(row['Sesiones realizadas']);
+        const precio     = limpiarNum(row['Precio paquete']);
+        const venc       = row['Fecha venc. aprox.'] || row['Vencimiento'] || local.venc;
+        if(realizadas > 0)  local.usadas  = realizadas;
+        if(precio > 0)      local.precio  = precio;
+        if(venc)            local.venc    = venc;
+      }
+    });
+  }
+  renderTablaPT();
+}
+
+function actualizarSesionesFicha(sesionesRaw){
+  if(!sesionesRaw.length) return;
+  // Agrupa sesiones por cliente
+  const porCliente = {};
+  sesionesRaw.forEach(s => {
+    const nombre = s['Cliente'] || s['Nombre'] || '';
+    if(!nombre) return;
+    if(!porCliente[nombre]) porCliente[nombre] = [];
+    porCliente[nombre].push({
+      f: s['Fecha']  || '',
+      h: s['Hora']   || '',
+      ok: (s['Asistió'] || s['Estado'] || '').toLowerCase().includes('sí') ||
+          (s['Asistió'] || s['Estado'] || '').toLowerCase() === 'confirmado',
+      obs:   s['Observaciones / Progreso'] || s['Observaciones'] || s['Servicio'] || '',
+      monto: parseInt(s['Monto sesión'] || s['Monto'] || '0') || 0,
+    });
+  });
+  // Reemplaza los datos demo con los reales
+  Object.entries(porCliente).forEach(([nombre, sesiones]) => {
+    // Ordena por fecha descendente
+    sesiones.sort((a,b) => b.f.localeCompare(a.f));
+    SESIONES_DEMO[nombre] = sesiones;
+  });
+}
+function downloadTemplate(){
+  const csvs={
+    'Pacientes':'Nombre,Diagnostico,Sesiones_realizadas,Sesiones_total,Ultima_sesion,Proxima_sesion,EVA_ingreso,EVA_actual,Estado\nDiego Mansilla,Rodilla LCA,12,20,2025-06-10,2025-06-12,7.5,3.0,En curso',
+    'Sesiones':'Fecha,Hora,Cliente,Tipo,Servicio,Estado,Monto\n2025-06-10,07:00,Lorraine Pugh,Personal,Rugby,Confirmado,10000',
+    'Clientes_PT':'Nombre,Perfil,Precio_paquete,Sesiones_usadas,Ultima_sesion,Estado\nLorraine Pugh,Rugby,120000,7,2025-06-10,Activo',
+    'Grupos':'Nombre,Cupo,Asistencia_ultima,Fecha_ultima\nMartes 20:30,15,13,2025-06-10\nSábado 9:30,15,10,2025-06-07',
+  };
+  Object.entries(csvs).forEach(([name,data])=>{
+    const blob=new Blob([data],{type:'text/csv'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download=name+'.csv';a.click();
+  });
+}
+
+
+// ═══════════════════════════════════════════
+// FICHA PANEL
+// ═══════════════════════════════════════════
+
+// Sesiones demo por cliente
+const SESIONES_DEMO = {
+  "Lorraine Pugh":    [{f:"2025-06-10",h:"07:00",ok:true, obs:"Sentadilla 75kg PR. Excelente sesión.",monto:10000},
+                       {f:"2025-06-05",h:"07:00",ok:true, obs:"Trabajo de velocidad. Sprint 40m en 5.8s.",monto:10000},
+                       {f:"2025-06-03",h:"07:00",ok:true, obs:"Fuerza tren superior. Press 60kg.",monto:10000},
+                       {f:"2025-05-29",h:"07:00",ok:false,obs:"Canceló por lesión leve tobillo.",monto:0},
+                       {f:"2025-05-27",h:"07:00",ok:true, obs:"Movilidad y activación. Buen ritmo.",monto:10000}],
+  "Carla Boero":      [{f:"2025-06-10",h:"09:00",ok:true, obs:"Hombro izq sin dolor. Agilidad en pista.",monto:10000},
+                       {f:"2025-06-05",h:"09:00",ok:true, obs:"Trabajo lateral y cambio de dirección.",monto:10000},
+                       {f:"2025-06-03",h:"09:00",ok:true, obs:"Fuerza core. Plancha 2min.",monto:10000},
+                       {f:"2025-05-29",h:"09:00",ok:true, obs:"Hockey-specific: dribbling y pases.",monto:10000}],
+  "Soledad Espinoza": [{f:"2025-06-10",h:"10:00",ok:false,obs:"Canceló a último momento.",monto:0},
+                       {f:"2025-06-05",h:"10:00",ok:true, obs:"Cardio + movilidad lumbar. Muy bien.",monto:12500},
+                       {f:"2025-06-03",h:"10:00",ok:true, obs:"Primera sesión con pesas. Buena actitud.",monto:12500}],
+  "Willy Yancovic":   [{f:"2025-06-10",h:"08:00",ok:true, obs:"Potencia: saltos + sprint. PR en broad jump.",monto:10000},
+                       {f:"2025-06-05",h:"08:00",ok:true, obs:"Fuerza tren inferior. Sentadilla 90kg.",monto:10000},
+                       {f:"2025-06-03",h:"08:00",ok:true, obs:"Explosividad. Buen trabajo.",monto:10000},
+                       {f:"2025-05-29",h:"08:00",ok:true, obs:"Velocidad lineal. 40m en 5.2s.",monto:10000}],
+  "Solange Marisio":  [{f:"2025-05-25",h:"08:00",ok:false,obs:"No se presentó. Sin aviso.",monto:0},
+                       {f:"2025-05-22",h:"08:00",ok:true, obs:"Agilidad y movilidad. Tobillo bien.",monto:10000},
+                       {f:"2025-05-20",h:"08:00",ok:true, obs:"Trabajo de base. Buena sesión.",monto:10000}],
+  "Anita Jara":       [{f:"2025-06-10",h:"19:00",ok:true, obs:"FC reposo 68bpm (↓ desde 78bpm). Gran avance.",monto:10000},
+                       {f:"2025-06-05",h:"19:00",ok:true, obs:"Cardio 30min + fuerza. Sin dolor lumbar.",monto:10000},
+                       {f:"2025-06-03",h:"19:00",ok:true, obs:"Movilidad + respiración. Muy motivada.",monto:10000},
+                       {f:"2025-05-29",h:"19:00",ok:true, obs:"Bajó 0.8kg. Sigue el plan alimentario.",monto:10000}],
+  "Nicolás Spoerer":  [{f:"2025-06-10",h:"20:00",ok:false,obs:"Sin confirmar. Pendiente contacto.",monto:0},
+                       {f:"2025-06-05",h:"20:00",ok:true, obs:"Primera sesión formal. Buen nivel base.",monto:10000},
+                       {f:"2025-06-03",h:"20:00",ok:true, obs:"Evaluación inicial completada.",monto:10000}],
+  "Mariana Spoerer":  [{f:"2025-06-05",h:"09:00",ok:true, obs:"Pilates funcional + core.",monto:10000},
+                       {f:"2025-06-03",h:"09:00",ok:true, obs:"Movilidad articular. Sin lesiones.",monto:10000},
+                       {f:"2025-05-29",h:"09:00",ok:true, obs:"Cardio interválico. Buen ritmo.",monto:10000},
+                       {f:"2025-05-27",h:"09:00",ok:true, obs:"Fuerza funcional. Progresando bien.",monto:10000},
+                       {f:"2025-05-22",h:"09:00",ok:true, obs:"Primera sesión. Evaluación inicial.",monto:10000}],
+  "Magdalena Spoerer":[{f:"2025-06-03",h:"09:00",ok:false,obs:"No asistió. Sin reagendar.",monto:0},
+                       {f:"2025-05-29",h:"09:00",ok:false,obs:"Faltó por segunda semana seguida.",monto:0},
+                       {f:"2025-05-22",h:"09:00",ok:true, obs:"Funcional + movilidad. Bien.",monto:10000},
+                       {f:"2025-05-20",h:"09:00",ok:true, obs:"Primera semana. Buena disposición.",monto:10000}],
+};
+
+// Notas locales (mientras no hay Sheets)
+const NOTAS_KEY = 'alonso_notas_pt';
+function getNotas(nombre){
+  try{ return JSON.parse(localStorage.getItem(NOTAS_KEY)||'{}')[nombre]||[]; }
+  catch(e){ return []; }
+}
+function saveNota(nombre, texto){
+  try{
+    const all = JSON.parse(localStorage.getItem(NOTAS_KEY)||'{}');
+    if(!all[nombre]) all[nombre]=[];
+    all[nombre].unshift({f: todayStr(), texto});
+    localStorage.setItem(NOTAS_KEY, JSON.stringify(all));
+  }catch(e){}
+}
+
+function openFicha(nombre){
+  const c = CLIENTES_PT.find(x=>x.nombre===nombre);
+  if(!c) return;
+  const initials = nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const restantes = 12 - c.usadas;
+  const pct = Math.round(c.usadas/12*100);
+  const sheetId = localStorage.getItem('alonso_sheet_id');
+
+  // Header
+  document.getElementById('fp-avatar').textContent = initials;
+  document.getElementById('fp-name').textContent = nombre;
+  document.getElementById('fp-sub').textContent = c.perfil + ' · ' + (c.precio===120000?'Socia Country Club':'No socia');
+
+  // Estado color paquete
+  let pakColor='var(--green)', pakLabel='Al día';
+  if(c.venc==='Sin agendar'){pakColor='var(--coral)';pakLabel='Sin reagendar';}
+  else if(restantes<=3){pakColor='var(--amber)';pakLabel='Por renovar';}
+
+  // Sesiones desde Sheets o demo
+  const sesiones = SESIONES_DEMO[nombre] || [];
+  const sesList = sesiones.slice(0,6).map(s=>{
+    const col = s.ok ? 'var(--green)' : 'var(--coral)';
+    const blbl = s.ok ? 'Asistió' : 'No asistió';
+    const bclr = s.ok ? 'background:var(--green-lt);color:#15803d' : 'background:var(--coral-lt);color:#991b1b';
+    return `<div class="ses-item">
+      <div class="ses-dot" style="background:${col}"></div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="ses-meta">${s.f} ${s.h}</span>
+          <span class="ses-badge" style="${bclr}">${blbl}</span>
+          ${s.monto>0?`<span style="font-size:.68rem;color:var(--text2)">$${s.monto.toLocaleString('es-CL')}</span>`:''}
+        </div>
+        <div class="ses-obs">${s.obs}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Notas guardadas
+  const notas = getNotas(nombre);
+  const notasList = notas.length
+    ? notas.map(n=>`<div style="padding:7px 10px;background:var(--amber-lt);border-radius:8px;margin-bottom:6px;font-size:.79rem">
+        <span style="font-size:.65rem;color:var(--text2);font-weight:700">${n.f}</span><br>${n.texto}
+      </div>`).join('')
+    : `<div style="font-size:.78rem;color:var(--text3);font-style:italic">Sin notas aún.</div>`;
+
+  const sheetHint = sheetId
+    ? `<div style="font-size:.72rem;color:var(--teal);margin-top:8px">✓ Conectado a Google Sheets — las sesiones se leen en tiempo real</div>`
+    : `<div style="font-size:.72rem;color:var(--text3);margin-top:8px">Sin Sheets conectado — mostrando datos de ejemplo · <a href="#" onclick="openModal();return false;" style="color:var(--teal)">Conectar →</a></div>`;
+
+  // Construir body
+  document.getElementById('fp-body').innerHTML = `
+
+    <div class="ficha-section">
+      <div class="ficha-stitle">📦 Paquete actual</div>
+      <div class="pak-wrap">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-bottom:10px">
+          <div><div class="pak-num" style="color:var(--teal)">${c.usadas}</div><div class="pak-lbl">Realizadas</div></div>
+          <div><div class="pak-num" style="color:${pakColor}">${restantes}</div><div class="pak-lbl">Restantes</div></div>
+          <div><div class="pak-num" style="color:var(--text2)">12</div><div class="pak-lbl">Total</div></div>
+        </div>
+        <div class="pb2"><div class="pf2" style="width:${pct}%;background:var(--teal)"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:.75rem;color:var(--text2)">
+          <span>Inicio: ${c.venc!=='Sin agendar'?'en curso':'—'}</span>
+          <span>Vence: <strong style="color:${pakColor}">${c.venc}</strong></span>
+          <span>Precio: <strong>$${c.precio.toLocaleString('es-CL')}</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ficha-section">
+      <div class="ficha-stitle">📋 Datos personales</div>
+      <div class="ficha-grid">
+        <div class="ficha-field full"><div class="ff-lbl">Nombre completo</div><div class="ff-val">${nombre}</div></div>
+        <div class="ficha-field"><div class="ff-lbl">Celular</div><div class="ff-val"><a href="tel:${c.celular}">${c.celular}</a></div></div>
+        <div class="ficha-field"><div class="ff-lbl">Correo</div><div class="ff-val" style="font-size:.75rem"><a href="mailto:${c.email}">${c.email}</a></div></div>
+        <div class="ficha-field"><div class="ff-lbl">Deporte / Perfil</div><div class="ff-val">${c.perfil}</div></div>
+        <div class="ficha-field"><div class="ff-lbl">Contacto emergencia</div><div class="ff-val" style="font-size:.76rem">${c.emergencia}</div></div>
+      </div>
+    </div>
+
+    <div class="ficha-section">
+      <div class="ficha-stitle">🏃 Salud y evaluación</div>
+      <div class="ficha-grid">
+        <div class="ficha-field"><div class="ff-lbl">Nivel previo</div><div class="ff-val">${c.nivel}</div></div>
+        <div class="ficha-field"><div class="ff-lbl">PAR-Q</div><div class="ff-val" style="color:var(--green)">${c.parq}</div></div>
+        <div class="ficha-field full"><div class="ff-lbl">Lesiones previas</div><div class="ff-val">${c.lesiones}</div></div>
+        <div class="ficha-field full"><div class="ff-lbl">Condiciones médicas</div><div class="ff-val">${c.condiciones}</div></div>
+        <div class="ficha-field"><div class="ff-lbl">Peso</div><div class="ff-val">${c.peso} kg</div></div>
+        <div class="ficha-field"><div class="ff-lbl">Talla</div><div class="ff-val">${c.talla} cm</div></div>
+        <div class="ficha-field"><div class="ff-lbl">% Grasa est.</div><div class="ff-val">${c.grasa}%</div></div>
+        <div class="ficha-field"><div class="ff-lbl">Obs. posturales</div><div class="ff-val">${c.obs}</div></div>
+      </div>
+    </div>
+
+    <div class="ficha-section">
+      <div class="ficha-stitle">📅 Últimas sesiones ${sheetHint}</div>
+      ${sesList || '<div style="font-size:.78rem;color:var(--text3);font-style:italic">Sin sesiones registradas.</div>'}
+    </div>
+
+    <div class="ficha-section">
+      <div class="ficha-stitle">📝 Notas rápidas</div>
+      ${notasList}
+      <textarea class="nota-input" id="nota-text-${nombre.replace(/\s/g,'_')}" placeholder="Agregar nota o recordatorio…"></textarea>
+      <button class="nota-btn" onclick="addNota('${nombre}')">Guardar nota</button>
+    </div>
+  `;
+
+  document.getElementById('fichaOverlay').classList.add('open');
+  document.getElementById('fichaPanel').classList.add('open');
+}
+
+function closeFicha(){
+  document.getElementById('fichaOverlay').classList.remove('open');
+  document.getElementById('fichaPanel').classList.remove('open');
+}
+
+function addNota(nombre){
+  const key = nombre.replace(/\s/g,'_');
+  const ta = document.getElementById('nota-text-'+key);
+  if(!ta || !ta.value.trim()) return;
+  saveNota(nombre, ta.value.trim());
+  openFicha(nombre); // re-render
+}
+
+// Cerrar con Escape
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeFicha(); });
+
+// ═══════════════════════ INIT ═══════════════════════
+document.getElementById('topDate').textContent =
+  new Date().toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+renderTablaPT();
+
+// Si ya había un ID guardado, sincronizar automáticamente al abrir
+const _savedId = localStorage.getItem(LS_KEY);
+if(_savedId){
+  document.getElementById('syncStatus').textContent = '⟳ Sincronizando…';
+  syncSheets();
+}
+</script>
+</body>
+</html>
