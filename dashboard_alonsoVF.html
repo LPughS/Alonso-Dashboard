@@ -1645,6 +1645,33 @@ function semanaAnterior(){ semanaOffset--; renderAgendaSemanal(); }
 function semanaSiguiente(){ semanaOffset++; renderAgendaSemanal(); }
 function irHoy(){ semanaOffset=0; diaSeleccionado=dateStr(new Date()); renderAgendaSemanal(); }
 
+
+// Parsea fecha o hora que viene de Google Sheets (puede ser Date object, string GMT, o string limpio)
+function parsearFechaSheets(val, tipo){
+  if(!val) return '';
+  const str = String(val);
+  // Es un objeto Date serializado o string GMT
+  if(str.includes('GMT') || val instanceof Date){
+    const d = new Date(str);
+    if(isNaN(d.getTime())) return '';
+    if(tipo === 'fecha'){
+      // Ajustar zona horaria Chile (UTC-4)
+      const local = new Date(d.getTime() + (4 * 60 * 60 * 1000));
+      return local.getFullYear()+'-'+String(local.getMonth()+1).padStart(2,'0')+'-'+String(local.getDate()).padStart(2,'0');
+    } else {
+      // Hora — extraer HH:MM del objeto Date
+      // Google guarda horas como fecha base 1899-12-30
+      const h = d.getUTCHours();
+      const m = d.getUTCMinutes();
+      return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+    }
+  }
+  // Ya es string limpio
+  if(tipo === 'fecha') return str.trim().slice(0,10);
+  if(tipo === 'hora')  return str.trim().slice(0,5);
+  return str.trim();
+}
+
 function cargarSesionesDesdeSheet(sesionesRaw){
   if(!sesionesRaw || !sesionesRaw.length){
     sesionesAgenda = generarSesionesDemo();
@@ -1657,23 +1684,10 @@ function cargarSesionesDesdeSheet(sesionesRaw){
 
   sesionesAgenda = sesionesRaw.map(s=>{
     // Fecha puede llegar como string "2026-06-12", como Date object, o como "Wed Jun 12..."
-    let fechaRaw = getCol(s,'Fecha') || s['Fecha'] || '';
-    let fecha = '';
-    if(fechaRaw instanceof Date){
-      // Objeto Date — formatear manualmente
-      const d = new Date(fechaRaw);
-      fecha = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    } else if(typeof fechaRaw === 'string' && fechaRaw.includes('GMT')){
-      // String tipo "Wed Jun 12 2026 03:00:00 GMT..." — parsear
-      const d = new Date(fechaRaw);
-      // Ajustar por zona horaria Chile (GMT-4)
-      const local = new Date(d.getTime() + (4 * 60 * 60 * 1000));
-      fecha = local.getFullYear()+'-'+String(local.getMonth()+1).padStart(2,'0')+'-'+String(local.getDate()).padStart(2,'0');
-    } else {
-      // Ya es string "2026-06-12"
-      fecha = String(fechaRaw).trim().slice(0,10);
-    }
-    const hora  = getCol(s,'Hora')  || s['Hora']  || '';
+    const fechaRaw = getCol(s,'Fecha') || s['Fecha'] || '';
+    const horaRaw  = getCol(s,'Hora')  || s['Hora']  || '';
+    const fecha = parsearFechaSheets(fechaRaw, 'fecha');
+    const hora  = parsearFechaSheets(horaRaw,  'hora');
     const cli   = getCol(s,'Cliente') || s['Cliente'] || '';
     const serv  = getCol(s,'Servicio') || s['Servicio / Foco'] || '';
     const tipo  = (getCol(s,'Tipo') || s['Tipo sesión'] || '').toLowerCase().includes('grup') ? 'grp' :
