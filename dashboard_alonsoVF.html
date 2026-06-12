@@ -1649,28 +1649,29 @@ function irHoy(){ semanaOffset=0; diaSeleccionado=dateStr(new Date()); renderAge
 // Parsea fecha o hora que viene de Google Sheets (puede ser Date object, string GMT, o string limpio)
 function parsearFechaSheets(val, tipo){
   if(!val) return '';
-  const str = String(val);
-  // Es un objeto Date serializado o string GMT
+  const str = String(val).trim();
+
+  // Si ya es string limpio — hora "18:00" o fecha "2026-06-12" — usarlo directo
+  if(tipo === 'hora' && /^\d{1,2}:\d{2}/.test(str)) return str.slice(0,5);
+  if(tipo === 'fecha' && /^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0,10);
+
+  // Es string GMT o Date object
   if(str.includes('GMT') || val instanceof Date){
     const d = new Date(str);
     if(isNaN(d.getTime())) return '';
     if(tipo === 'fecha'){
-      // Para fechas: usar getUTC* para evitar doble ajuste de timezone
-      // Google Sheets envía la fecha a medianoche UTC, ajustar +4 para Chile
       const local = new Date(d.getTime() + (4 * 60 * 60 * 1000));
       return local.getUTCFullYear()+'-'+String(local.getUTCMonth()+1).padStart(2,'0')+'-'+String(local.getUTCDate()).padStart(2,'0');
     } else {
-      // Hora: Google guarda como fracción del día base 1899-12-30
-      // La hora real está en getHours() local (ya ajustada por el browser)
-      const h = d.getHours();
-      const m = d.getMinutes();
-      return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+      // Usar offset real del browser para ajustar la hora
+      const offsetMs = new Date().getTimezoneOffset() * 60 * 1000;
+      const local = new Date(d.getTime() - offsetMs);
+      return String(local.getUTCHours()).padStart(2,'0')+':'+String(local.getUTCMinutes()).padStart(2,'0');
     }
   }
-  // Ya es string limpio
-  if(tipo === 'fecha') return str.trim().slice(0,10);
-  if(tipo === 'hora')  return str.trim().slice(0,5);
-  return str.trim();
+  if(tipo === 'fecha') return str.slice(0,10);
+  if(tipo === 'hora')  return str.slice(0,5);
+  return str;
 }
 
 function cargarSesionesDesdeSheet(sesionesRaw){
