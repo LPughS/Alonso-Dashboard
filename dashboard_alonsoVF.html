@@ -855,6 +855,24 @@ function show(id, btn){
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   btn.classList.add('active');
+  if(id === 'agenda'){ refreshAgenda(); }
+  if(id === 'hoy')   { renderHoy(); }
+}
+
+async function refreshAgenda(){
+  const sheetId = localStorage.getItem('alonso_sheet_id');
+  if(!sheetId){ renderAgendaSemanal(); return; }
+  try {
+    const raw = await appsGet('Sesiones_PT');
+    cargarSesionesDesdeSheet(raw);
+  } catch(e){
+    try {
+      const raw = await fetchSheet(sheetId, 'Sesiones_PT');
+      cargarSesionesDesdeSheet(raw);
+    } catch(e2){ /* usa demo */ }
+  }
+  renderAgendaSemanal();
+  renderHoy();
 }
 
 // ═══════════════════════ SHEETS ═══════════════════════
@@ -1395,7 +1413,7 @@ async function guardarSesion(){
     const result = await appsPost(payload);
     if(result.ok){
       cerrarModalSesion();
-      // Agregar localmente para que aparezca de inmediato sin esperar sync
+      // Agregar localmente para que aparezca de inmediato
       const tipo = payload.tipo === 'Grupal' ? 'grp' : payload.tipo === 'Clínica' ? 'cli' : 'per';
       sesionesAgenda.push({
         fecha:    payload.fecha,
@@ -1405,8 +1423,11 @@ async function guardarSesion(){
         servicio: payload.servicio,
         obs:      payload.obs,
       });
+      // Ordenar por hora
+      sesionesAgenda.sort((a,b)=> (a.fecha+a.hora).localeCompare(b.fecha+b.hora));
       renderAgendaSemanal();
       renderDetalleDia(_fechaSesion);
+      renderHoy();
     } else {
       alert('Error: ' + (result.error || 'No se pudo guardar'));
     }
@@ -1608,7 +1629,15 @@ function semanaSiguiente(){ semanaOffset++; renderAgendaSemanal(); }
 function irHoy(){ semanaOffset=0; diaSeleccionado=dateStr(new Date()); renderAgendaSemanal(); }
 
 function cargarSesionesDesdeSheet(sesionesRaw){
-  if(!sesionesRaw || !sesionesRaw.length) return;
+  if(!sesionesRaw || !sesionesRaw.length){
+    sesionesAgenda = generarSesionesDemo();
+    return;
+  }
+  // Si todas las sesiones son muy antiguas (>60 días), combinar con demo
+  const hoy = new Date();
+  const hace60 = new Date(hoy); hace60.setDate(hoy.getDate() - 60);
+  const hace60Str = dateStr(hace60);
+
   sesionesAgenda = sesionesRaw.map(s=>{
     const fecha = getCol(s,'Fecha') || s['Fecha'] || '';
     const hora  = getCol(s,'Hora')  || s['Hora']  || '';
@@ -1619,6 +1648,13 @@ function cargarSesionesDesdeSheet(sesionesRaw){
     const obs   = getCol(s,'Observaciones') || s['Observaciones / Progreso'] || '';
     return {fecha, hora, cliente:cli, tipo, servicio:serv, obs};
   }).filter(s=>s.fecha && s.cliente);
+
+  // Si no hay sesiones recientes (últimos 60 días), agregar demo de esta semana
+  const recientes = sesionesAgenda.filter(s => s.fecha >= hace60Str);
+  if(recientes.length === 0){
+    const demo = generarSesionesDemo();
+    sesionesAgenda = [...sesionesAgenda, ...demo];
+  }
 }
 
 // ═══════════════════════ INIT ═══════════════════════
