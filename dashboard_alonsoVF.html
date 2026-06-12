@@ -856,7 +856,24 @@ function show(id, btn){
   document.getElementById('page-'+id).classList.add('active');
   btn.classList.add('active');
   if(id === 'agenda'){ refreshAgenda(); }
-  if(id === 'hoy')   { renderHoy(); }
+  if(id === 'hoy')   { refreshHoy(); }
+}
+
+
+async function refreshHoy(){
+  const sheetId = localStorage.getItem('alonso_sheet_id');
+  if(sheetId){
+    try {
+      const raw = await appsGet('Sesiones_PT');
+      cargarSesionesDesdeSheet(raw);
+    } catch(e){
+      try {
+        const raw = await fetchSheet(sheetId, 'Sesiones_PT');
+        cargarSesionesDesdeSheet(raw);
+      } catch(e2){ /* usa lo que haya */ }
+    }
+  }
+  renderHoy();
 }
 
 async function refreshAgenda(){
