@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -796,38 +795,53 @@ function limpiarNum(str){
   return parseInt(String(str).replace(/[$.]/g,'').replace(/\s/g,'')) || 0;
 }
 
+// Busca el valor de una clave que CONTENGA el texto buscado (ignora emojis y prefijos)
+function getCol(row, keyword){
+  const key = Object.keys(row).find(k => k.toLowerCase().includes(keyword.toLowerCase()));
+  return key ? row[key] : '';
+}
+
 function actualizarTablaPT(clientesRaw, paquetesRaw){
-  // Fusiona Clientes_PT (perfil, datos personales)
   clientesRaw.forEach(row => {
-    const nombre = row['Nombre completo'] || row['Nombre'] || '';
+    const nombre = getCol(row, 'Nombre completo') || getCol(row, 'Nombre') || '';
     const local = CLIENTES_PT.find(c => c.nombre === nombre);
     if(local){
-      if(row['Deporte / Actividad']) local.perfil = row['Deporte / Actividad'];
-      if(row['Celular'])             local.celular = row['Celular'];
-      if(row['Correo electrónico'])  local.email   = row['Correo electrónico'];
-      if(row['Contacto emergencia']) local.emergencia = row['Contacto emergencia'];
-      if(row['Nivel previo'])        local.nivel   = row['Nivel previo'];
-      if(row['Lesiones previas'])    local.lesiones = row['Lesiones previas'];
-      if(row['Condiciones médicas']) local.condiciones = row['Condiciones médicas'];
-      if(row['Peso (kg)'])           local.peso    = parseFloat(row['Peso (kg)']) || local.peso;
-      if(row['Talla (cm)'])          local.talla   = parseFloat(row['Talla (cm)']) || local.talla;
-      if(row['% Grasa est.'])        local.grasa   = parseFloat(row['% Grasa est.']) || local.grasa;
-      if(row['Obs. posturales'])     local.obs     = row['Obs. posturales'];
+      const deporte = getCol(row, 'Deporte');
+      const celular = getCol(row, 'Celular');
+      const correo  = getCol(row, 'Correo');
+      const emerg   = getCol(row, 'emergencia');
+      const nivel   = getCol(row, 'Nivel previo');
+      const lesion  = getCol(row, 'Lesiones');
+      const condic  = getCol(row, 'Condiciones');
+      const peso    = getCol(row, 'Peso');
+      const talla   = getCol(row, 'Talla');
+      const grasa   = getCol(row, 'Grasa');
+      const obs     = getCol(row, 'posturales');
+      if(deporte) local.perfil      = deporte;
+      if(celular) local.celular     = celular;
+      if(correo)  local.email       = correo;
+      if(emerg)   local.emergencia  = emerg;
+      if(nivel)   local.nivel       = nivel;
+      if(lesion)  local.lesiones    = lesion;
+      if(condic)  local.condiciones = condic;
+      if(peso)    local.peso        = parseFloat(peso) || local.peso;
+      if(talla)   local.talla       = parseFloat(talla) || local.talla;
+      if(grasa)   local.grasa       = parseFloat(grasa) || local.grasa;
+      if(obs)     local.obs         = obs;
     }
   });
 
-  // Fusiona Paquetes_PT (sesiones, precio, vencimiento)
   if(paquetesRaw && paquetesRaw.length){
     paquetesRaw.forEach(row => {
-      const nombre = row['Nombre completo'] || row['Nombre'] || '';
+      const nombre = getCol(row, 'Nombre completo') || getCol(row, 'Nombre') || '';
       const local = CLIENTES_PT.find(c => c.nombre === nombre);
       if(local){
-        const realizadas = limpiarNum(row['Sesiones realizadas']);
-        const precio     = limpiarNum(row['Precio paquete']);
-        const venc       = row['Fecha venc. aprox.'] || row['Vencimiento'] || local.venc;
-        if(realizadas > 0)  local.usadas  = realizadas;
-        if(precio > 0)      local.precio  = precio;
-        if(venc)            local.venc    = venc;
+        const realizadas = limpiarNum(getCol(row, 'realizadas'));
+        const precio     = limpiarNum(getCol(row, 'Precio'));
+        const venc       = getCol(row, 'venc') || getCol(row, 'Vencimiento') || local.venc;
+        if(realizadas > 0) local.usadas = realizadas;
+        if(precio > 0)     local.precio = precio;
+        if(venc)           local.venc   = venc;
       }
     });
   }
