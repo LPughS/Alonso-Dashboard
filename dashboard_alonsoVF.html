@@ -433,12 +433,12 @@
 <div class="page active" id="page-hoy">
 
   <div class="stitle">Vista del día</div>
-  <div class="g5">
+  <div class="g5" id="kpis-hoy-grid">
     <div class="card kpi">
       <div class="kpi-acc" style="background:var(--teal)"></div>
       <div class="kpi-lbl">Sesiones PT hoy</div>
-      <div class="kpi-val" style="color:var(--teal)">6</div>
-      <div class="kpi-sub">5 confirmadas · 1 sin confirmar</div>
+      <div class="kpi-val" style="color:var(--teal)" id="kpi-sesiones-hoy">—</div>
+      <div class="kpi-sub" id="kpi-sesiones-sub">cargando…</div>
     </div>
     <div class="card kpi">
       <div class="kpi-acc" style="background:var(--blue)"></div>
@@ -449,38 +449,28 @@
     <div class="card kpi">
       <div class="kpi-acc" style="background:var(--green)"></div>
       <div class="kpi-lbl">Ingresos PT hoy</div>
-      <div class="kpi-val" style="color:var(--green)">$60k</div>
-      <div class="kpi-sub up">6 sesiones × $10k</div>
+      <div class="kpi-val" style="color:var(--green)" id="kpi-ingresos-hoy">—</div>
+      <div class="kpi-sub up" id="kpi-ingresos-sub">cargando…</div>
     </div>
     <div class="card kpi">
       <div class="kpi-acc" style="background:var(--coral)"></div>
       <div class="kpi-lbl">Horas libres</div>
-      <div class="kpi-val" style="color:var(--coral)">1</div>
-      <div class="kpi-sub">11:00 disponible</div>
+      <div class="kpi-val" style="color:var(--coral)" id="kpi-libres-hoy">—</div>
+      <div class="kpi-sub" id="kpi-libres-sub">cargando…</div>
     </div>
     <div class="card kpi">
       <div class="kpi-acc" style="background:var(--amber)"></div>
       <div class="kpi-lbl">Alertas</div>
-      <div class="kpi-val" style="color:var(--amber)">2</div>
+      <div class="kpi-val" style="color:var(--amber)" id="kpi-alertas-hoy">2</div>
       <div class="kpi-sub">Clientes sin reagendar</div>
     </div>
   </div>
 
-  <div class="stitle">Agenda de hoy — Martes</div>
+  <div class="stitle" id="titulo-agenda-hoy">Agenda de hoy</div>
   <div class="card">
     <table>
       <thead><tr><th>Hora</th><th>Cliente</th><th>Deporte / Perfil</th><th>Sesión</th><th>Estado</th></tr></thead>
-      <tbody>
-        <tr><td>07:00</td><td><strong>Lorraine Pugh</strong></td><td>Rugby</td><td>7 / 12</td><td><span class="badge b-green"><span class="dot dot-g"></span>Confirmada</span></td></tr>
-        <tr><td>08:00</td><td><strong>Willy Yancovic</strong></td><td>Rugby</td><td>4 / 12</td><td><span class="badge b-green"><span class="dot dot-g"></span>Confirmada</span></td></tr>
-        <tr><td>09:00</td><td><strong>Carla Boero</strong></td><td>Hockey</td><td>10 / 12</td><td><span class="badge b-green"><span class="dot dot-g"></span>Confirmada</span></td></tr>
-        <tr><td>10:00</td><td><strong>Soledad Espinoza</strong></td><td>Sedentario activo</td><td>3 / 12</td><td><span class="badge b-green"><span class="dot dot-g"></span>Confirmada</span></td></tr>
-        <tr><td>11:00</td><td style="color:var(--text3)">—</td><td>—</td><td>—</td><td><span class="badge b-yellow">Disponible</span></td></tr>
-        <tr><td style="color:var(--coral);font-weight:700">13:00 – 18:00</td><td colspan="3" style="font-weight:700;color:var(--coral)">🏥 Sanatorio Alemán — Turno clínico</td><td><span class="badge b-red">Clínica</span></td></tr>
-        <tr><td>19:00</td><td><strong>Anita Jara</strong></td><td>Sedentario activo</td><td>9 / 12</td><td><span class="badge b-green"><span class="dot dot-g"></span>Confirmada</span></td></tr>
-        <tr><td>20:00</td><td><strong>Nicolás Spoerer</strong></td><td>Rugby</td><td>2 / 12</td><td><span class="badge b-yellow"><span class="dot dot-y"></span>Sin confirmar</span></td></tr>
-        <tr><td>20:30</td><td><strong>Grupo Funcional A</strong></td><td colspan="2">Clase funcional en circuitos — Country Club · 13 asistentes</td><td><span class="badge b-blue">Club paga</span></td></tr>
-      </tbody>
+      <tbody id="tabla-hoy-body"></tbody>
     </table>
   </div>
 
@@ -973,6 +963,7 @@ async function syncSheets(){
     // Cargar sesiones en la agenda
     cargarSesionesDesdeSheet(sesionesRaw);
     renderAgendaSemanal();
+    renderHoy();
 
     status.textContent = '✓ Sheets conectado · ' + new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
     status.style.color = 'var(--teal)';
@@ -1268,6 +1259,73 @@ function addNota(nombre){
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeFicha(); });
 
 
+
+
+// ═══════════════════════════════════════════
+// RENDER HOY DINÁMICO
+// ═══════════════════════════════════════════
+function renderHoy(){
+  const hoyStr = dateStr(new Date());
+  const hoy = new Date();
+  const nomDia = hoy.toLocaleDateString('es-CL',{weekday:'long'});
+  const nomCompleto = hoy.toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'});
+
+  // Título dinámico
+  const tit = document.getElementById('titulo-agenda-hoy');
+  if(tit) tit.textContent = 'Agenda de hoy — ' + nomDia.charAt(0).toUpperCase() + nomDia.slice(1);
+
+  // Sesiones de hoy desde agenda
+  const fuente = sesionesAgenda.length ? sesionesAgenda : generarSesionesDemo();
+  const sesHoy = fuente.filter(s => s.fecha === hoyStr).sort((a,b)=>a.hora.localeCompare(b.hora));
+  const ptHoy  = sesHoy.filter(s => s.tipo === 'per');
+  const ingresos = ptHoy.reduce((acc, s) => {
+    const c = CLIENTES_PT.find(x => x.nombre === s.cliente);
+    return acc + (c ? Math.round(c.precio / 12) : 10000);
+  }, 0);
+
+  // Horas ocupadas PT (7-11 y 18-21)
+  const horasOcupadasM = ptHoy.filter(s=>s.hora < '13:00').length;
+  const horasOcupadasT = ptHoy.filter(s=>s.hora >= '18:00').length;
+  const maxM = 5, maxT = 4; // máx sesiones mañana / tarde
+  const libresM = Math.max(0, maxM - horasOcupadasM);
+  const libresT = Math.max(0, maxT - horasOcupadasT);
+  const libres = libresM + libresT;
+
+  // KPIs
+  document.getElementById('kpi-sesiones-hoy').textContent = ptHoy.length;
+  document.getElementById('kpi-sesiones-sub').textContent =
+    sesHoy.filter(s=>s.tipo==='grp').length > 0 ? '+ clase grupal esta tarde' : ptHoy.length + ' sesiones individuales';
+  document.getElementById('kpi-ingresos-hoy').textContent = ingresos >= 1000000
+    ? '$' + (ingresos/1000000).toFixed(2) + 'M'
+    : '$' + Math.round(ingresos/1000) + 'k';
+  document.getElementById('kpi-ingresos-sub').textContent = ptHoy.length + ' sesiones PT';
+  document.getElementById('kpi-libres-hoy').textContent = libres;
+  document.getElementById('kpi-libres-sub').textContent =
+    libresM > 0 ? libresM + ' mañana · ' + libresT + ' tarde' : 'Agenda completa';
+
+  // Tabla de agenda
+  const tbody = document.getElementById('tabla-hoy-body');
+  if(!tbody) return;
+
+  if(!sesHoy.length){
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px;font-style:italic">Sin sesiones registradas para hoy</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = sesHoy.map(s => {
+    const c = CLIENTES_PT.find(x => x.nombre === s.cliente);
+    const perfil = c ? c.perfil : s.servicio || '—';
+    const tipoBadge = s.tipo==='grp' ? 'b-blue' : s.tipo==='cli' ? 'b-red' : 'b-teal';
+    const tipoBadgeTxt = s.tipo==='grp' ? 'Club paga' : s.tipo==='cli' ? 'Clínica' : 'Personal';
+    return `<tr>
+      <td>${s.hora}</td>
+      <td><strong>${s.cliente}</strong></td>
+      <td>${perfil}</td>
+      <td>${s.servicio || '—'}</td>
+      <td><span class="badge ${tipoBadge}">${tipoBadgeTxt}</span></td>
+    </tr>`;
+  }).join('');
+}
 
 // ═══════════════════════════════════════════
 // APPS SCRIPT — Lectura y escritura en Sheets
